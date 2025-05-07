@@ -55,9 +55,7 @@ Filtered subset of the [PubMedQA dataset](https://huggingface.co/datasets/qiaoji
 
 ```
 ├── chat_gui.py             # Streamlit chat interface logic
-├── data/                   # Dataset directory
-│   ├── download_dataset.py # Script to download the dataset
-│   └── PubMedQA.csv        # Original dataset
+├── .streamlit/             # Streamlit theme configuration
 ├── docs/                   # Documentation files
 ├── eval.py                 # Evaluation metrics implementation
 ├── knowledge/              # Processed knowledge base
@@ -65,7 +63,7 @@ Filtered subset of the [PubMedQA dataset](https://huggingface.co/datasets/qiaoji
 ├── models.py               # Model interface
 ├── rag.py                  # RAG implementation
 ├── requirements.txt        # Python dependencies
-└── streamlit_app.py        # Streamlit configuration
+└── streamlit_app.py        # Streamlit app configuration
 ```
 
 ---
