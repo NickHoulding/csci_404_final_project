@@ -28,6 +28,9 @@ def main():
     except subprocess.CalledProcessError:
         print("Error: Failed to start Streamlit interface")
 
+    except KeyboardInterrupt:
+        print("\nExit: Stopped by user.")
+
 # Entry point
 if __name__ == "__main__":
     main()
