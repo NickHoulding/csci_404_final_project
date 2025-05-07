@@ -3,28 +3,30 @@ MediChat: A medical AI chatbot.
 """
 
 # Imports
-from models import query_model
-
-# Globals
-DISCLAIMER = "This is not a diagnosis; consult a physician."
+import subprocess
+import os
 
 def main():
-    print("MediChat: A medical AI chatbot.\nType 'quit' to quit.\n")
-
-    is_active = True
-    try:
-        while is_active:
-            user_input = input("User: ").strip().lower()
-            
-            if user_input == "quit":
-                is_active = False
-                print("\nExiting the chat. Goodbye!")
-            elif user_input:
-                response = query_model(user_input)
-                print(f"\nMediChat: {response}\n\n{DISCLAIMER}\n")
+    """
+    Launches the Streamlit interface for MediChat
+    """
+    file_path = os.path.join(
+        os.path.dirname(__file__),
+        'chat_gui.py'
+    )
     
-    except KeyboardInterrupt:
-        print("\n\nExiting the chat. Goodbye!")
+    try:
+        subprocess.run(
+            ["streamlit", "run", file_path], 
+            check=True
+        )
+    
+    except FileNotFoundError:
+        print("""Error: Streamlit not found. 
+              Install it using 'pip install streamlit'""")
+    
+    except subprocess.CalledProcessError:
+        print("Error: Failed to start Streamlit interface")
 
 # Entry point
 if __name__ == "__main__":
