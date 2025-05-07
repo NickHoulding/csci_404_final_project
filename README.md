@@ -4,6 +4,11 @@ A command-line chatbot that leverages Retrieval-Augmented Generation (RAG) to su
 
 ---
 
+## Disclaimer
+This system does not provide medical diagnoses. All responses include a disclaimer and are intended only to assist licensed healthcare professionals.
+
+---
+
 ## Features
 
 - Retrieval of top-3 relevant medical abstracts using FAISS and BioBERT embeddings
@@ -16,13 +21,13 @@ A command-line chatbot that leverages Retrieval-Augmented Generation (RAG) to su
 
 ## Technologies Used
 
-- Python 3.10+
+- Python 3.10.12
 - [BioBERT](https://huggingface.co/dmis-lab/biobert-v1.1) via Hugging Face Transformers
 - [LLaMA 3.2:1B-Instruct](https://ollama.com/library/llama3.2) via Ollama
-- FAISS (GPU-accelerated cosine similarity search)
+- FAISS database (GPU-accelerated cosine similarity search)
 - Langchain
 - Streamlit (for basic GUI)
-- Hugging Face `evaluate` for metric scoring
+- Hugging Face `evaluate` library for metric scoring
 
 ---
 
@@ -49,18 +54,18 @@ Filtered subset of the [PubMedQA dataset](https://huggingface.co/datasets/qiaoji
 ## Project Structure
 
 ```
-├── chat_gui.py           # Streamlit chat interface logic
-├── data/                 # Dataset directory
-│   ├── download_dataset.py
-│   └── PubMedQA.csv
-├── docs/                 # Documentation files
-├── eval.py               # Evaluation metrics implementation
-├── knowledge/            # Processed knowledge base
-├── main.py               # Application entry point
-├── models.py             # ML model interface
-├── rag.py                # RAG implementation
-├── requirements.txt      # Python dependencies
-└── streamlit_app.py      # Streamlit configuration
+├── chat_gui.py             # Streamlit chat interface logic
+├── data/                   # Dataset directory
+│   ├── download_dataset.py # Script to download the dataset
+│   └── PubMedQA.csv        # Original dataset
+├── docs/                   # Documentation files
+├── eval.py                 # Evaluation metrics implementation
+├── knowledge/              # Processed knowledge base
+├── main.py                 # Application entry point
+├── models.py               # Model interface
+├── rag.py                  # RAG implementation
+├── requirements.txt        # Python dependencies
+└── streamlit_app.py        # Streamlit configuration
 ```
 
 ---
@@ -69,8 +74,8 @@ Filtered subset of the [PubMedQA dataset](https://huggingface.co/datasets/qiaoji
 
 ### 1. Clone the repo
 ```bash
-git clone https://github.com/yourusername/medical-rag-chatbot.git
-cd medical-rag-chatbot
+git clone git@github.com:NickHoulding/csci_404_final_project.git
+cd csci_404_final_project
 ```
 
 ### 2. Create a virtual environment
@@ -88,24 +93,20 @@ pip install -r requirements.txt
 Install Ollama and pull the LLaMA model:
 
 ```bash
-ollama run llama3.2
+ollama pull llama3.2:1b-instruct-q4_0
 ```
 
-Make sure FAISS is GPU-enabled (install faiss-gpu) and BioBERT is loaded via Hugging Face.
+Make sure FAISS is GPU-enabled (install faiss-gpu) and BioBERT is loaded via HuggingFace.
 
 ## How to Run
 ```bash
-streamlit run streamlit_app.py
+python3 main.py
 ```
 
 Then open the local link in your browser. Type in a symptom-based query (e.g., "fever, shortness of breath"), and the chatbot will return a generated insight and disclaimer.
 
-## Disclaimer
-This system does not provide medical diagnoses. All responses include a disclaimer and are intended only to assist licensed healthcare professionals.
-
 ## Authors
-Nicholas Houlding
-
-Parker Mina
+- Nicholas Houlding
+- Parker Mina
 
 Project for CSCI 404: Natural Language Processing – Spring 2025
