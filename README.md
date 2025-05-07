@@ -1,6 +1,6 @@
-# Medical RAG Chatbot for Respiratory Infection Insights
+# Medical RAG Chatbot
 
-A command-line chatbot that leverages Retrieval-Augmented Generation (RAG) to support doctors by providing medically relevant insights based on symptom input. The system retrieves information from a curated PubMed-based knowledge base and generates context-aware suggestions using LLaMA and BioBERT.
+A chatbot that leverages Retrieval-Augmented Generation (RAG) to support doctors by providing medically relevant insights based on symptom input. The system retrieves information from a curated PubMed-based knowledge base and generates context-aware suggestions using LLaMA and BioBERT.
 
 ---
 
@@ -25,7 +25,7 @@ This system does not provide medical diagnoses. All responses include a disclaim
 - [BioBERT](https://huggingface.co/dmis-lab/biobert-v1.1) via Hugging Face Transformers
 - [LLaMA 3.2:1B-Instruct](https://ollama.com/library/llama3.2) via Ollama
 - FAISS database (GPU-accelerated cosine similarity search)
-- Langchain
+- Langchain (for RAG implementation)
 - Streamlit (for basic GUI)
 - Hugging Face `evaluate` library for metric scoring
 
@@ -40,14 +40,14 @@ Filtered subset of the [PubMedQA dataset](https://huggingface.co/datasets/qiaoji
 ## Evaluation Metrics
 
 ### Retrieval
-- **Recall@3**
-- **Precision@3**
-- **Mean Reciprocal Rank (MRR)**
+- **Recall@3:** Measures whether at least one relevant document appears in the top K retrieved contexts. We will compute Recall@3 with a target score > 0.8.
+- **Precision@3:** Evaluates the proportion of retrieved documents that are relevant in the top K documents. We will use Precision@3 to quantify contextual relevance.
+- **Mean Reciprocal Rank (MRR):** Captures how highly ranked the first retrieved document is, averaged across queries. Higher MRR indicates better prioritization of useful context.
 
 ### Generation
-- **BLEU** – Checks overlap of key medical phrases
-- **ROUGE-L** – Evaluates structured summary retention
-- **BERTScore** – Measures semantic similarity between generated and reference outputs
+- **BLEU:** Measures n-gram overlap with a reference answer. This ensures that the chatbot’s responses include key medical terms and phrases drawn directly from authoritative sources.
+- **ROUGE-L:** Captures longest common subsequence between generated and reference answers. It is particularly useful for verifying that the chatbot preserves the structure and sequence of clinically relevant information when summarizing evidence.
+- **BERTScore:** Computes semantic similarity using contextual embeddings from a pre-trained language model. This is ideal for evaluating whether the chatbot's responses capture the correct meaning and nuance of medical insights, even if phrased differently.
 
 ---
 
@@ -90,7 +90,7 @@ pip install -r requirements.txt
 ```
 
 ### 4. Download models
-Install Ollama and pull the LLaMA model:
+Install [Ollama](https://ollama.com/) and pull the LLaMA model:
 
 ```bash
 ollama pull llama3.2:1b-instruct-q4_0
@@ -103,7 +103,7 @@ Make sure FAISS is GPU-enabled (install faiss-gpu) and BioBERT is loaded via Hug
 python3 main.py
 ```
 
-Then open the local link in your browser. Type in a symptom-based query (e.g., "fever, shortness of breath"), and the chatbot will return a generated insight and disclaimer.
+Type in a symptom-based query (e.g., "fever, shortness of breath"), and the chatbot will return a generated insight and disclaimer.
 
 ## Authors
 - Nicholas Houlding
