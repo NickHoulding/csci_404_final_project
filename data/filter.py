@@ -1,7 +1,17 @@
 """
 Filters the dataset based on the given keywords using regex.
 
-Stops when either:
+Usage:
+    1. Install dependencies
+    2. Run: cd data
+    3. Update the below global variables as per your needs:
+        - INPUT_DATASET
+        - OUTPUT_DATASET
+        - MAX_ROWS
+        - KEYWORDS
+    4. Run: python3 filter.py
+
+The program stops when either:
     1. The whole dataset is processed.
     2. MAX_ROWS rows have been included in OUTPUT_DATASET.
 
