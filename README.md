@@ -94,7 +94,7 @@ Install [Ollama](https://ollama.com/) and pull the LLaMA model:
 ollama pull llama3.2:1b-instruct-q4_0
 ```
 
-Make sure FAISS is GPU-enabled (install faiss-gpu) and BioBERT is loaded via HuggingFace.
+---
 
 ## How to Run
 ```bash
@@ -102,6 +102,8 @@ python3 main.py
 ```
 
 Type in a symptom-based query (e.g., "fever, shortness of breath"), and the chatbot will return a generated insight and disclaimer.
+
+---
 
 ## Authors
 - Nicholas Houlding
