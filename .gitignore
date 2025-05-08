@@ -1,7 +1,8 @@
 # Directories
 __pycache__
-data
 knowledge
 venv
 
 # Files
+data/PubMedQA.csv
+data/Respiratory_Large_PubMedQA.csv
