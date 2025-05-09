@@ -1,14 +1,15 @@
 """
 Filters the dataset based on the given keywords using regex.
 
-Usage:
-    1. Install dependencies
-    2. Run: cd data
-    4. Run: python3 filter.py --help
+Usage:      1. Install dependencies
+            2. Run: cd data
+            3. Run: python3 filter.py --help
 
-The program stops when either:
-    1. The whole dataset is processed.
-    2. MAX_ROWS rows have been included in OUTPUT_DATASET.
+Stops when: 1. The whole dataset is processed.
+            2. The upper limit of rows is reached.
+
+NOTE:       To 'disable' the upper limit, set maxrows to be 
+            >= the number of rows in the infile.
 """
 
 # Imports
