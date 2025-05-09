@@ -95,19 +95,34 @@ def validate_args(args: argparse.Namespace) -> bool:
         print("Arg Error: Input and output files must be different.")
         return False
 
+    # Validate input file
     if not os.path.isfile(args.infile):
         print(f"Arg Error: Input file: \"{args.infile}\" does not exist.")
         return False
-
-    if not os.path.isfile(args.keywords):
-        print(f"Arg Error: Keywords file: \"{args.keywords}\" does not exist.")
+    elif not re.match(r'.*\.csv$', args.infile):
+        print(f"Arg Error: Input file: \"{args.infile}\" is not a .csv file.")
+        return False
+    
+    # Validate output file
+    if not re.match(r'.*\.csv$', args.outfile):
+        print(f"Arg Error: Output file: \"{args.outfile}\" is not a .csv file.")
         return False
 
+    # Validate maxrows
     if args.maxrows <= 0:
         print("Arg Error: maxrows must be greater than 0.")
         return False
 
-    df = pd.read_csv(args.infile)
+    # Validate keywords file
+    if not os.path.isfile(args.keywords):
+        print(f"Arg Error: Keywords file: \"{args.keywords}\" does not exist.")
+        return False
+    elif not re.match(r'.*\.txt$', args.keywords):
+        print(f"Arg Error: Keywords file: \"{args.keywords}\" is not a .txt file.")
+        return False
+
+    # Validate attribute
+    df = pd.read_csv(args.infile, nrows=0)
     if args.attr not in df.columns:
         print(f"Arg Error: Attribute: \"{args.attr}\" does not exist in the input file.")
         return False
@@ -288,6 +303,7 @@ if __name__ == "__main__":
     )
     
     print(f"Saving filtered dataset to {args.outfile}")
+    os.makedirs(os.path.dirname(args.outfile), exist_ok=True)
     filtered_df.to_csv(args.outfile, index=False)
     print(f"Saved {len(filtered_df)} samples")
 
