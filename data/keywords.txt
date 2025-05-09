@@ -1,0 +1,22 @@
+asthma
+bronchitis
+pneumonia
+tuberculosis
+flu
+influenza
+covid
+covid-19
+coronavirus
+respiratory infection
+lung disease
+shortness of breath
+dyspnea
+wheezing
+cough
+chest tightness
+pulmonary
+pleurisy
+ARDS
+COPD
+upper respiratory
+lower respiratory

@@ -4,57 +4,22 @@ Filters the dataset based on the given keywords using regex.
 Usage:
     1. Install dependencies
     2. Run: cd data
-    3. Update the below global variables as per your needs:
-        - INPUT_DATASET
-        - OUTPUT_DATASET
-        - MAX_ROWS
-        - KEYWORDS
-    4. Run: python3 filter.py
+    4. Run: python3 filter.py --help
 
 The program stops when either:
     1. The whole dataset is processed.
     2. MAX_ROWS rows have been included in OUTPUT_DATASET.
-
-NOTE:   Your current working directory must be the same as 
-        this script's directory.
 """
 
 # Imports
 import concurrent.futures
 import pandas as pd
 import threading
+import argparse
 import tqdm
+import sys
 import os
 import re
-
-# Globals
-INPUT_DATASET = "PubMedQA.csv"
-OUTPUT_DATASET = "Respiratory_Small_PubMedQA.csv"
-MAX_ROWS = 2000
-KEYWORDS = [
-    "asthma", 
-    "bronchitis", 
-    "pneumonia", 
-    "tuberculosis", 
-    "flu", 
-    "influenza",
-    "covid", 
-    "covid-19", 
-    "coronavirus", 
-    "respiratory infection", 
-    "lung disease", 
-    "shortness of breath", 
-    "dyspnea", 
-    "wheezing", 
-    "cough", 
-    "chest tightness", 
-    "pulmonary", 
-    "pleurisy", 
-    "ARDS", 
-    "COPD", 
-    "upper respiratory", 
-    "lower respiratory"
-]
 
 class Counter:
     """
@@ -94,7 +59,76 @@ class Counter:
         with self.lock:
             return self.value
 
-def contains_respiratory_keyword(text: str) -> bool:
+def setup_args() -> argparse.Namespace:
+    """
+    Sets up the command line arguments for the script.
+
+    Returns:
+        argparse.Namespace: The parsed command line arguments.
+    """
+    parser = argparse.ArgumentParser(description="Filter a .csv dataset on keywords using regex.")
+
+    parser.add_argument("--infile", type=str, required=True,
+                        help="(str) path to the existing input csv")
+    parser.add_argument("--outfile", type=str, required=True,
+                        help="(str) output path for the filtered csv")
+    parser.add_argument("--maxrows", type=int, required=True,
+                        help="(int) maximum rows in the output csv")
+    parser.add_argument("--keywords", type=str, required=True,
+                        help="(str) path to the .txt file with keywords, each on a new line")
+    parser.add_argument("--attr", type=str, required=True,
+                        help="(str) the name of the attribute to filter on")
+    
+    return parser.parse_args()
+
+def validate_args(args: argparse.Namespace) -> bool:
+    """
+    Validates the command line arguments.
+
+    Args:
+        args (argparse.Namespace): The parsed command line arguments.
+    Returns:
+        bool: True if the arguments are valid, 
+            False otherwise.
+    """
+    if args.infile == args.outfile:
+        print("Arg Error: Input and output files must be different.")
+        return False
+
+    if not os.path.isfile(args.infile):
+        print(f"Arg Error: Input file: \"{args.infile}\" does not exist.")
+        return False
+
+    if not os.path.isfile(args.keywords):
+        print(f"Arg Error: Keywords file: \"{args.keywords}\" does not exist.")
+        return False
+
+    if args.maxrows <= 0:
+        print("Arg Error: maxrows must be greater than 0.")
+        return False
+
+    df = pd.read_csv(args.infile)
+    if args.attr not in df.columns:
+        print(f"Arg Error: Attribute: \"{args.attr}\" does not exist in the input file.")
+        return False
+    
+    return True
+
+def get_keywords(keywords_file: str) -> list:
+    """
+    Reads the keywords from a file and returns them as a list.
+
+    Args:
+        keywords_file (str): The path to the keywords file.
+    Returns:
+        list: A list of keywords.
+    """
+    with open(keywords_file, 'r') as f:
+        keywords = [line.strip() for line in f.readlines()]
+    
+    return keywords
+
+def contains_respiratory_keyword(text: str, keywords) -> bool:
     """
     Checks for matching keywords using regex.
     
@@ -108,15 +142,19 @@ def contains_respiratory_keyword(text: str) -> bool:
         return False
         
     text = text.lower()
-    for kw in KEYWORDS:
+    
+    for kw in keywords:
         if re.search(r'\b' + re.escape(kw.lower()) + r'\b', text):
             return True
+    
     return False
 
 def process_chunk(chunk, 
                   processed_counter: Counter,
                   found_counter: Counter,
-                  progress_bar: tqdm.tqdm
+                  progress_bar: tqdm.tqdm,
+                  max_rows: int,
+                  keywords: list
                   ) -> pd.DataFrame:
     """
     Filters a chunk of the DataFrame.
@@ -138,14 +176,14 @@ def process_chunk(chunk,
             if pd.isna(context):
                 continue
             
-            if contains_respiratory_keyword(str(context)):
+            if contains_respiratory_keyword(str(context), keywords):
                 results.append(row)
                 found_counter.increment()
             
             processed_counter.increment()
             progress_bar.update(1)
             
-            if found_counter.get() >= MAX_ROWS:
+            if found_counter.get() >= max_rows:
                 return pd.DataFrame(results) if results else None
                 
         except Exception as e:
@@ -156,7 +194,8 @@ def process_chunk(chunk,
 def parallel_filter_dataset(df: pd.DataFrame, 
                             num_workers: int, 
                             chunk_size: int, 
-                            max_rows: int
+                            max_rows: int,
+                            keywords: list
                             ) -> pd.DataFrame:
     """
     Filters the dataset in parallel.
@@ -187,7 +226,9 @@ def parallel_filter_dataset(df: pd.DataFrame,
                 chunk,
                 processed_counter,
                 found_counter,
-                progress_bar
+                progress_bar,
+                max_rows,
+                keywords
             )
             futures.append(future)
             
@@ -223,11 +264,13 @@ def parallel_filter_dataset(df: pd.DataFrame,
 
 # Entry point
 if __name__ == "__main__":
-    current_dir = os.path.dirname(__file__)
-    input_path = os.path.join(current_dir, INPUT_DATASET)
-    output_path = os.path.join(current_dir, OUTPUT_DATASET)
+    args = setup_args()
 
-    df = pd.read_csv(input_path)
+    if not validate_args(args):
+        sys.exit(1)
+
+    keywords = get_keywords(args.keywords)
+    df = pd.read_csv(args.infile)
     print(f"Loaded {len(df)} samples")
     
     num_workers = min(os.cpu_count(), 8)
@@ -236,10 +279,16 @@ if __name__ == "__main__":
     print(f"Split dataset into {num_chunks} chunks of size {chunk_size}")
 
     print(f"Using {num_workers} workers for parallel processing")
-    filtered_df = parallel_filter_dataset(df, num_workers, chunk_size, MAX_ROWS)
+    filtered_df = parallel_filter_dataset(
+        df,
+        num_workers, 
+        chunk_size, 
+        args.maxrows,
+        keywords
+    )
     
-    print(f"Saving filtered dataset to {output_path}")
-    filtered_df.to_csv(output_path, index=False)
+    print(f"Saving filtered dataset to {args.outfile}")
+    filtered_df.to_csv(args.outfile, index=False)
     print(f"Saved {len(filtered_df)} samples")
 
     print("Filtering complete")
