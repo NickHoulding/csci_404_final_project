@@ -1,5 +1,5 @@
 """
-Models module for MediChat: handling model loading and inference
+Models module for MediChat: Handling model loading and inference
 """
 
 # Imports
@@ -17,15 +17,12 @@ def query_model(query_text: str) -> str:
     Returns:
         response (str): The model's response to the query.
     """
-    # Query the model
     response = ollama.chat(
         messages=[{
                 "role": "user",
-                "content": f'''
-                    {query_text}
-                '''}],
+                "content": f'''{query_text}'''
+                }],
         model=MODEL_NAME,
     )
     
-    # Return the response
     return response.message.content

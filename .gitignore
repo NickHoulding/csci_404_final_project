@@ -2,6 +2,7 @@
 __pycache__
 knowledge
 venv
+models/dmis-lab
 
 # Files
 data/PubMedQA.csv
