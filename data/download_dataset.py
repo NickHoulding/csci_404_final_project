@@ -1,7 +1,7 @@
 """
 Downloads the dataset from Hugging Face and saves it as a CSV file.
 
-Usage:  1. Install dependencies
+Usage:  1. Install python dependencies
         2. Run: cd data
         3. Change the global variables to your needs
         4. Run: python3 download_dataset.py

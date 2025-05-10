@@ -1,7 +1,8 @@
 """
 Filters the dataset based on the given keywords using regex.
 
-Usage:      1. Install dependencies
+Usage:      1. Install python dependencies
+            2. Run: pip install https://s3-us-west-2.amazonaws.com/ai2-s2-scispacy/releases/v0.4.0/en_ner_bc5cdr_md-0.4.0.tar.gz
             2. Run: cd data
             3. Run: python3 filter_dataset.py --help
 
@@ -150,28 +151,6 @@ def get_keywords(keywords_file: str) -> list:
     
     return keywords
 
-# Naive regex keyword matching method (no longer used, will be removed soon)
-def contains_respiratory_keyword(text: str, keywords: list) -> bool:
-    """
-    Checks for matching keywords using regex.
-    
-    Args:
-        text (str): The text to check.
-    Returns:
-        bool: True if there are keyword matches in the text, 
-            False otherwise.
-    """
-    if not isinstance(text, str):
-        return False
-        
-    text = text.lower()
-    
-    for kw in keywords:
-        if re.search(r'\b' + re.escape(kw.lower()) + r'\b', text):
-            return True
-    
-    return False
-
 def get_nlp() -> spacy.lang.en.English:
     """
     Loads the NER model for named entity recognition.
@@ -184,7 +163,10 @@ def get_nlp() -> spacy.lang.en.English:
     
     return thread_local.nlp
 
-def is_respiratory_related(text: str, keywords: list, nlp=None) -> bool:
+def is_respiratory_related(text: str, 
+                           keywords: list, 
+                           nlp=None
+                           ) -> bool:
     """
     Checks if the text is related to respiratory diseases using NER.
 
@@ -212,10 +194,6 @@ def is_respiratory_related(text: str, keywords: list, nlp=None) -> bool:
         for kw in keywords:
             if re.search(r'\b' + re.escape(kw.lower()) + r'\b', e):
                 return True
-    
-    for kw in keywords:
-        if re.search(r'\b' + re.escape(kw.lower()) + r'\b', text):
-            return True
     
     return False
 
@@ -314,14 +292,17 @@ def parallel_filter_dataset(df: pd.DataFrame,
         for future in concurrent.futures.as_completed(futures):
             try:
                 result = future.result()
+
                 if result is not None and not result.empty:
                     all_results.append(result)
+            
             except Exception as e:
                 print(f"Error collecting results: {e}")
         
         if all_results:
             with results_lock:
                 filtered_df = pd.concat(all_results, ignore_index=True)
+                
                 if len(filtered_df) > max_rows:
                     filtered_df = filtered_df.head(max_rows)
     
