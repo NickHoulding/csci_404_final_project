@@ -3,6 +3,7 @@ __pycache__
 knowledge
 venv
 models/dmis-lab
+models/meta-llama
 
 # Files
 data/PubMedQA.csv

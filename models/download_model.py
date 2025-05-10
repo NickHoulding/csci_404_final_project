@@ -2,10 +2,9 @@
 Downloads the specified model from HuggingFace and 
 saves it in the local cache.
 
-Usage:  1. Install dependencies
-        2. Run: cd models
-        3. Change the global variable to your needs
-        4. Run: python3 download_model.py
+Usage:  1. Install python dependencies
+        2. Change the relevant ENV variables in env.py to your needs
+        3. Run: python3 download_model.py
 
 NOTE:   Some HuggingFace models have different imports from 
         transformers. Check the model's documentation and 
@@ -14,12 +13,18 @@ NOTE:   Some HuggingFace models have different imports from
 
 # Imports
 from transformers import AutoTokenizer, AutoModel
+import sys
+import os
 
-# Globals
-MODEL_NAME = "dmis-lab/biobert-v1.1"
+# Adds the parent directory to the system path so the env import works
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from env import get_env_var
 
-tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
-model = AutoModel.from_pretrained(MODEL_NAME)
+model_name = get_env_var('MODEL_NAME')
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+model = AutoModel.from_pretrained(model_name)
 
-tokenizer.save_pretrained(MODEL_NAME)
-model.save_pretrained(MODEL_NAME)
+tokenizer.save_pretrained(os.path.join(os.path.dirname(__file__), model_name))
+model.save_pretrained(os.path.join(os.path.dirname(__file__), model_name))
+
+print(f"Model {model_name} downloaded and saved in the local cache.")

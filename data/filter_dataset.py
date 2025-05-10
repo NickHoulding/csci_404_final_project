@@ -2,9 +2,9 @@
 Filters the dataset based on the given keywords using regex.
 
 Usage:      1. Install python dependencies
-            2. Run: pip install https://s3-us-west-2.amazonaws.com/ai2-s2-scispacy/releases/v0.4.0/en_ner_bc5cdr_md-0.4.0.tar.gz
-            2. Run: cd data
-            3. Run: python3 filter_dataset.py --help
+            2. Change the relevant ENV variables in env.py to your needs
+            3. Run: pip install https://s3-us-west-2.amazonaws.com/ai2-s2-scispacy/releases/v0.4.0/en_ner_bc5cdr_md-0.4.0.tar.gz
+            4. Run: python3 filter_dataset.py --help
 
 Stops when: 1. The whole dataset is processed.
             2. The upper limit of rows is reached.
@@ -25,8 +25,11 @@ import sys
 import os
 import re
 
+# Adds the parent directory to the system path so the env import works
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from env import get_env_var
+
 # Globals
-NER_MODEL = "en_ner_bc5cdr_md"
 thread_local = threading.local()
 
 class Counter:
@@ -159,7 +162,7 @@ def get_nlp() -> spacy.lang.en.English:
         spacy.lang.en.English: The spaCy NER model.
     """
     if not hasattr(thread_local, "nlp"):
-        thread_local.nlp = spacy.load(NER_MODEL)
+        thread_local.nlp = spacy.load(get_env_var('NER_MODEL'))
     
     return thread_local.nlp
 

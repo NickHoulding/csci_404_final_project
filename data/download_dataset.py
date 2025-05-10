@@ -2,9 +2,8 @@
 Downloads the dataset from Hugging Face and saves it as a CSV file.
 
 Usage:  1. Install python dependencies
-        2. Run: cd data
-        3. Change the global variables to your needs
-        4. Run: python3 download_dataset.py
+        2. Change the relevant ENV variables in env.py to your needs
+        3. Run: python3 download_dataset.py
 
 NOTE:   Your current working directory must be the same as 
         this script's directory.
@@ -12,10 +11,12 @@ NOTE:   Your current working directory must be the same as
 
 # Imports
 from datasets import load_dataset
+import sys
+import os
 
-# Globals
-DATASET_NAME = "qiaojin/PubMedQA"
-FILE_NAME = "PubMedQA.csv"
+# Adds the parent directory to the system path so the env import works
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from env import get_env_var
 
-dataset = load_dataset(DATASET_NAME, "pqa_artificial")
-dataset["train"].to_csv(FILE_NAME, index=False)
+dataset = load_dataset(get_env_var('DATASET_NAME'), get_env_var('DATASET_SUBSET'))
+dataset["train"].to_csv(get_env_var('FILE_NAME'), index=False)

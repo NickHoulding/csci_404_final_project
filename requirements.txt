@@ -1,7 +1,9 @@
 datasets==3.6.0
 ollama==0.4.8
 pandas==2.2.3
+python-dotenv==1.1.0
 spacy==3.8.5
 streamlit==1.45.0
 tqdm==4.67.1
 transformers==4.51.3
+torch==2.7.0+cpu

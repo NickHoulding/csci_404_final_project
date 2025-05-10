@@ -2,11 +2,9 @@
 Handles Streamlit chat interface logic.
 """
 
-import streamlit as st
 from models import query_model
-
-# Constants
-DISCLAIMER = "This is not a diagnosis; consult a physician."
+from env import get_env_var
+import streamlit as st
 
 def initialize_session_state():
     """Initialize session state variables if they don't exist"""
@@ -101,7 +99,7 @@ def run_chat_interface():
         with st.chat_message("assistant"):
             with st.spinner("Thinking..."):
                 response = query_model(prompt)
-                formatted_response = f"{response}\n\n*{DISCLAIMER}*"
+                formatted_response = f"{response}\n\n*{get_env_var('DISCLAIMER')}*"
                 st.markdown(formatted_response)
         
         add_message("assistant", formatted_response)
