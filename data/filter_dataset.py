@@ -2,15 +2,14 @@
 Filters the dataset based on the given keywords using regex.
 
 Usage:      1. Install python dependencies
-            2. Change the relevant ENV variables in env.py to your needs
-            3. Run: pip install https://s3-us-west-2.amazonaws.com/ai2-s2-scispacy/releases/v0.4.0/en_ner_bc5cdr_md-0.4.0.tar.gz
-            4. Run: python3 filter_dataset.py --help
+            2. Run: pip install https://s3-us-west-2.amazonaws.com/ai2-s2-scispacy/releases/v0.4.0/en_ner_bc5cdr_md-0.4.0.tar.gz
+            3. Run: python3 filter_dataset.py --help
 
 Stops when: 1. The whole dataset is processed.
-            2. The upper limit of rows is reached.
+            2. The maximum matched rows are reached.
 
-NOTE:       To 'disable' the upper limit, set maxrows to be 
-            >= the number of rows in the infile.
+NOTE:       To 'disable' the upper limit on matched rows, set 
+            maxrows to be >= the number of rows in the infile.
 """
 
 # Imports
@@ -77,7 +76,7 @@ def setup_args() -> argparse.Namespace:
     Returns:
         argparse.Namespace: The parsed command line arguments.
     """
-    parser = argparse.ArgumentParser(description="Filter a .csv dataset on keywords using regex.")
+    parser = argparse.ArgumentParser(description="Filters .csv datasets using Named Entity Recognition (NER).")
 
     parser.add_argument("--infile", type=str, required=True,
                         help="(str) path to the existing input csv")
@@ -89,6 +88,8 @@ def setup_args() -> argparse.Namespace:
                         help="(str) path to the .txt file with keywords, each on a new line")
     parser.add_argument("--attr", type=str, required=True,
                         help="(str) the name of the attribute to filter on")
+    parser.add_argument("--ner_model", type=str, default=get_env_var('NER_MODEL'),
+                        help="(str) the name of the spaCy NER model to use (defaults to NER_MODEL in env.py if not specified)")
     
     return parser.parse_args()
 
@@ -154,15 +155,17 @@ def get_keywords(keywords_file: str) -> list:
     
     return keywords
 
-def get_nlp() -> spacy.lang.en.English:
+def get_nlp(ner_model: str) -> spacy.lang.en.English:
     """
     Loads the NER model for named entity recognition.
 
+    Args:
+        ner_model (str): The name of the NER model to load.
     Returns:
         spacy.lang.en.English: The spaCy NER model.
     """
     if not hasattr(thread_local, "nlp"):
-        thread_local.nlp = spacy.load(get_env_var('NER_MODEL'))
+        thread_local.nlp = spacy.load(ner_model)
     
     return thread_local.nlp
 
@@ -205,7 +208,8 @@ def process_chunk(chunk,
                   found_counter: Counter,
                   progress_bar: tqdm.tqdm,
                   max_rows: int,
-                  keywords: list
+                  keywords: list,
+                  ner_model: str
                   ) -> pd.DataFrame:
     """
     Filters a chunk of the DataFrame.
@@ -221,7 +225,7 @@ def process_chunk(chunk,
         pd.DataFrame: A DataFrame containing the filtered rows.
     """
     results = []
-    nlp = get_nlp()
+    nlp = get_nlp(ner_model)
 
     for _, row in chunk.iterrows():
         should_process = found_counter.get() < max_rows
@@ -246,7 +250,8 @@ def parallel_filter_dataset(df: pd.DataFrame,
                             num_workers: int, 
                             chunk_size: int, 
                             max_rows: int,
-                            keywords: list
+                            keywords: list,
+                            ner_model: str
                             ) -> pd.DataFrame:
     """
     Filters the dataset in parallel.
@@ -280,7 +285,8 @@ def parallel_filter_dataset(df: pd.DataFrame,
                 found_counter,
                 progress_bar,
                 max_rows,
-                keywords
+                keywords,
+                ner_model
             )
             futures.append(future)
             i += 1
@@ -338,7 +344,8 @@ if __name__ == "__main__":
         num_workers, 
         chunk_size, 
         args.maxrows,
-        keywords
+        keywords,
+        args.ner_model
     )
     
     print(f"Saving filtered dataset to {args.outfile}")

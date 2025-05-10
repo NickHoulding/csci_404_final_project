@@ -1,14 +1,13 @@
 """
-Downloads the specified model from HuggingFace and 
-saves it in the local cache.
+Downloads the specified model from HuggingFace and saves it in the 
+local cache.
 
 Usage:  1. Install python dependencies
         2. Change the relevant ENV variables in env.py to your needs
         3. Run: python3 download_model.py
 
-NOTE:   Some HuggingFace models have different imports from 
-        transformers. Check the model's documentation and 
-        add their imports below.
+NOTE:   This should work with any model from HuggingFace available 
+        through the transformers library (don't quote me on that).
 """
 
 # Imports
