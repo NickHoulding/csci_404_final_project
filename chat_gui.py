@@ -3,6 +3,7 @@ Handles Streamlit chat interface logic.
 """
 
 from models import query_model
+from rag import search_top_k
 from env import get_env_var
 import streamlit as st
 
@@ -98,6 +99,12 @@ def run_chat_interface():
         
         with st.chat_message("assistant"):
             with st.spinner("Thinking..."):
+                prompt = search_top_k(
+                    query_text=prompt, 
+                    k=3
+                )
+                prompt = " ".join([x["context"] for x in prompt])
+
                 title, response, followup_questions = query_model(prompt)
                 output_response = f"### {title}\n{response}\n"
 
