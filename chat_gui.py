@@ -98,11 +98,19 @@ def run_chat_interface():
         
         with st.chat_message("assistant"):
             with st.spinner("Thinking..."):
-                response = query_model(prompt)
-                formatted_response = f"{response}\n\n*{get_env_var('DISCLAIMER')}*"
-                st.markdown(formatted_response)
+                title, response, followup_questions = query_model(prompt)
+                output_response = f"### {title}\n{response}\n"
+
+                if followup_questions:
+                    output_response += "##### Follow-up Questions\n"
+
+                    for question in followup_questions:
+                        output_response += f"- {question}\n"
         
-        add_message("assistant", formatted_response)
+                output_response += f"\n*{get_env_var('DISCLAIMER')}*"
+                st.markdown(output_response)
+
+        add_message("assistant", output_response)
 
 # Entry point
 if __name__ == "__main__":
