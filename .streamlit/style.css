@@ -1,0 +1,64 @@
+/* MediChat Custom Styling */
+
+/* Centered title */
+.centered-title {
+    text-align: center;
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    font-weight: bold;
+    color: #4287f5;
+    text-shadow: 0px 0px 10px rgba(66, 135, 245, 0.3);
+}
+
+/* Text input styling */
+.stTextInput>div>div>input {
+    border-radius: 10px;
+    background-color: #262730;
+    color: #fafafa;
+    border: 1px solid #4287f5;
+}
+
+/* Chat message styling */
+.stChatMessage {
+    border-radius: 15px;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+.stChatMessage[data-testid="user-message"] {
+    background-color: #3a3f4b !important;
+}
+
+.stChatMessage[data-testid="assistant-message"] {
+    background-color: #262730 !important;
+}
+
+/* Spinner color */
+.stSpinner>div {
+    border-top-color: #4287f5 !important;
+}
+
+/* Emphasis text */
+em {
+    color: #a1a1a1;
+    font-size: 0.9rem;
+}
+
+/* Chat input container */
+.stChatInputContainer {
+    background-color: #1e232a;
+    border-top: 1px solid #333;
+    padding-top: 10px;
+}
+
+/* App container */
+.stApp {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Content container */
+.main .block-container {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+}

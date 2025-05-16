@@ -5,6 +5,7 @@ Handles Streamlit chat interface logic.
 from models import query_model
 from rag import search_top_k
 from env import get_env_var
+from utils import load_css
 import streamlit as st
 
 def initialize_session_state():
@@ -27,61 +28,7 @@ def add_message(role, content):
 
 def run_chat_interface():
     """Main function to run the Streamlit chat interface"""
-    st.set_page_config(
-        page_title="MediChat",
-        page_icon="🏥",
-        layout="centered"
-    )
-    
-    # CSS for custom styling
-    st.markdown("""
-        <style>
-        .centered-title {
-            text-align: center;
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            font-weight: bold;
-            color: #4287f5;
-            text-shadow: 0px 0px 10px rgba(66, 135, 245, 0.3);
-        }
-        
-        .stTextInput>div>div>input {
-            border-radius: 10px;
-            background-color: #262730;
-            color: #fafafa;
-            border: 1px solid #4287f5;
-        }
-        
-        .stChatMessage {
-            border-radius: 15px;
-            padding: 10px;
-            margin-bottom: 10px;
-        }
-        
-        .stChatMessage[data-testid="user-message"] {
-            background-color: #3a3f4b !important;
-        }
-        
-        .stChatMessage[data-testid="assistant-message"] {
-            background-color: #262730 !important;
-        }
-        
-        .stSpinner>div {
-            border-top-color: #4287f5 !important;
-        }
-        
-        em {
-            color: #a1a1a1;
-            font-size: 0.9rem;
-        }
-        
-        .stChatInputContainer {
-            background-color: #1e232a;
-            border-top: 1px solid #333;
-            padding-top: 10px;
-        }
-        </style>""", 
-        unsafe_allow_html=True)
+    load_css()
     
     st.markdown(
         "<h1 class='centered-title'>MediChat</h1>", 
@@ -99,18 +46,16 @@ def run_chat_interface():
         
         with st.chat_message("assistant"):
             with st.spinner("Thinking..."):
-                prompt = search_top_k(
-                    query_text=prompt, 
-                    k=3
-                )
-                prompt = " ".join([x["context"] for x in prompt])
+                results = search_top_k(query_text=prompt, k=3)
 
-                title, response, followup_questions = query_model(prompt)
+                # TODO: Add instructions to tell the AI how to use the context in its response.
+                contexts = " ".join([x["text"] for x in results])
+                
+                title, response, followup_questions = query_model(contexts)
                 output_response = f"### {title}\n{response}\n"
 
                 if followup_questions:
                     output_response += "##### Follow-up Questions\n"
-
                     for question in followup_questions:
                         output_response += f"- {question}\n"
         
