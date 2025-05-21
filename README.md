@@ -1,6 +1,6 @@
-# Medical RAG Chatbot
+# MediChat: Medical RAG Chatbot
 
-A chatbot that leverages Retrieval-Augmented Generation (RAG) to support doctors by providing medically relevant insights based on symptom input. The system retrieves information from a curated PubMed-based knowledge base and generates context-aware suggestions using LLaMA and BioBERT.
+A chatbot that leverages Retrieval-Augmented Generation (RAG) to support doctors by providing medically relevant insights based on symptom input. The system retrieves information from a curated PubMed-based knowledge base and generates context-aware suggestions using LLaMA 3.2 and BioBERT.
 
 ---
 
@@ -23,7 +23,7 @@ This system does not provide medical diagnoses. All responses include a disclaim
 
 - Python 3.10.12
 - [BioBERT](https://huggingface.co/dmis-lab/biobert-v1.1) via Hugging Face Transformers
-- [LLaMA 3.2:1B-Instruct](https://ollama.com/library/llama3.2) via Ollama
+- [LLaMA 3.2:1B-Instruct](https://ollama.com/library/llama3.2) via Ollama API
 - FAISS database (GPU-accelerated cosine similarity search)
 - Langchain (for RAG implementation)
 - Streamlit (for basic GUI)
@@ -54,16 +54,33 @@ Filtered subset of the [PubMedQA dataset](https://huggingface.co/datasets/qiaoji
 ## Project Structure
 
 ```
-├── chat_gui.py             # Streamlit chat interface logic
-├── .streamlit/             # Streamlit theme configuration
+├── .streamlit/             # Streamlit theme configuration and styling
+│   ├── config.toml         # Streamlit configuration
+│   └── style.css           # Custom CSS styling
+├── data/                   # Dataset management
+│   ├── download_dataset.py # Script to download PubMedQA dataset
+│   ├── filter_dataset.py   # Filter dataset for respiratory cases
+│   ├── keywords.txt        # Keywords for filtering relevant articles
+│   └── Respiratory_Small_PubMedQA.csv # Filtered dataset
 ├── docs/                   # Documentation files
-├── eval.py                 # Evaluation metrics implementation
+│   └── CSCI 404 Final Project Proposal.pdf # Project proposal document
 ├── knowledge/              # Processed knowledge base
+│   ├── index.faiss         # FAISS vector index
+│   ├── populate_database.py # Script to populate vector database
+│   └── texts.pkl           # Stored text chunks
+├── models/                 # Model storage
+│   ├── download_model.py   # Script to download models
+│   └── dmis-lab/biobert-v1.1/ # BioBERT embedding model
+├── .env                    # Environment variables and configuration
 ├── main.py                 # Application entry point
-├── models.py               # Model interface
+├── env.py                  # Environment variable handling
+├── eval.py                 # Evaluation metrics implementation
+├── models.py               # Model interface for LLaMA
 ├── rag.py                  # RAG implementation
 ├── requirements.txt        # Python dependencies
-└── streamlit_app.py        # Streamlit app configuration
+├── streamlit_app.py        # Streamlit app configuration
+├── chat_gui.py             # Streamlit chat interface logic
+└── utils.py                # Utility functions
 ```
 
 ---
@@ -87,21 +104,40 @@ source venv/bin/activate  # or venv\Scripts\activate on Windows
 pip install -r requirements.txt
 ```
 
-### 4. Download models
+### 4. Download models and dataset
 Install [Ollama](https://ollama.com/) and pull the LLaMA model:
 
 ```bash
+# Pull the LLaMA model using Ollama
 ollama pull llama3.2:1b-instruct-q4_0
+
+# Download the BioBERT embedding model
+python models/download_model.py
+
+# Download and filter the PubMedQA dataset
+python data/download_dataset.py
+python data/filter_dataset.py
+
+# Build the knowledge base
+python knowledge/populate_database.py
 ```
 
 ---
 
 ## How to Run
+
+Launch the application using:
+
 ```bash
 python3 main.py
 ```
 
-Type in a symptom-based query (e.g., "fever, shortness of breath"), and the chatbot will return a generated insight and disclaimer.
+This will start the Streamlit interface.
+
+Type in a symptom-based query (e.g., "fever, shortness of breath"), and the chatbot will:
+1. Retrieve the most relevant medical contexts using BioBERT embeddings
+2. Generate a contextual response using LLaMA 3.2
+3. Display the response with an appropriate medical disclaimer
 
 ---
 

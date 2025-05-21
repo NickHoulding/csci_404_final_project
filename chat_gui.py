@@ -41,17 +41,13 @@ def run_chat_interface():
     if prompt := st.chat_input("What are the patient's symptoms?"):
         add_message("user", prompt)
         
-        with st.chat_message("user"):
-            st.markdown(prompt)
+        with st.spinner("Thinking..."):
+            formatted_prompt = get_context_prompt(prompt)
+            title, response = query_model(formatted_prompt)
+            output_response = f"### {title}\n{response}\n\n*{get_env_var('DISCLAIMER')}*"
         
-        with st.chat_message("assistant"):
-            with st.spinner("Thinking..."):
-                formatted_prompt = get_context_prompt(prompt)
-                title, response = query_model(formatted_prompt)
-                output_response = f"### {title}\n{response}\n\n*{get_env_var('DISCLAIMER')}*"
-                st.markdown(output_response)
-
         add_message("assistant", output_response)
+        st.rerun()
 
 # Entry point
 if __name__ == "__main__":
