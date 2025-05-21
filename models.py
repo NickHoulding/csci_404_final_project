@@ -14,7 +14,6 @@ class ModelResponseStructure(BaseModel):
     """
     topic_title: str
     response: str
-    followup_questions: Optional[list[str]] = None
 
 def query_model(query_text: str) -> str:
     """
@@ -37,5 +36,4 @@ def query_model(query_text: str) -> str:
     response_obj = ModelResponseStructure.model_validate_json(response.message.content)
     
     return (response_obj.topic_title,
-            response_obj.response, 
-            response_obj.followup_questions)
+            response_obj.response)

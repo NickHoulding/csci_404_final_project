@@ -36,6 +36,34 @@ model.eval()
 with open(os.path.join(knowledge_save_path, "texts.pkl"), "rb") as f:
     texts = pickle.load(f)
 
+PROMPT_TEMPLATE = """
+Based only on the following medical context, provide a concise clinical insight to help a doctor interpret a patient's symptoms. The insight must be medically relevant, grounded in the provided context, and limited to a single paragraph or short list.
+
+{context}
+
+---
+Patient presents with the following symptoms:
+{prompt}
+
+Respond in a clear, medically appropriate tone. Do not speculate or provide a diagnosis.
+"""
+
+def get_context_prompt(user_query: str) -> str:
+    """
+    Create a formatted context prompt for the model.
+
+    Args:
+        prompt (str): The user query.
+
+    Returns:
+        str: The formatted prompt.
+    """
+    results = search_top_k(user_query, k=3)
+    context = "\n".join([f"**{result['text']}**\n" for result in results])
+
+    return PROMPT_TEMPLATE.format(context=context, 
+                                  prompt=user_query)
+
 def search_top_k(query_text: str, k=3) -> list[dict]:
     """
     Search for the top k most relevant texts for a given query text.

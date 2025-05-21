@@ -2,8 +2,8 @@
 Handles Streamlit chat interface logic.
 """
 
+from rag import get_context_prompt
 from models import query_model
-from rag import search_top_k
 from env import get_env_var
 from utils import load_css
 import streamlit as st
@@ -46,20 +46,9 @@ def run_chat_interface():
         
         with st.chat_message("assistant"):
             with st.spinner("Thinking..."):
-                results = search_top_k(query_text=prompt, k=3)
-
-                # TODO: Add instructions to tell the AI how to use the context in its response.
-                contexts = " ".join([x["text"] for x in results])
-                
-                title, response, followup_questions = query_model(contexts)
-                output_response = f"### {title}\n{response}\n"
-
-                if followup_questions:
-                    output_response += "##### Follow-up Questions\n"
-                    for question in followup_questions:
-                        output_response += f"- {question}\n"
-        
-                output_response += f"\n*{get_env_var('DISCLAIMER')}*"
+                formatted_prompt = get_context_prompt(prompt)
+                title, response = query_model(formatted_prompt)
+                output_response = f"### {title}\n{response}\n\n*{get_env_var('DISCLAIMER')}*"
                 st.markdown(output_response)
 
         add_message("assistant", output_response)
