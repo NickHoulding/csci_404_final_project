@@ -99,7 +99,7 @@ def main():
                                         get_env_var("EMBEDDING_MODEL"))
     
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print(f"Using device: {device}")
+    print(f"Using device: {device} for embeddings generation")
     
     if device.type == "cuda":
         torch.cuda.empty_cache()
@@ -152,15 +152,7 @@ def main():
     # Create FAISS index
     d = final_embeddings.shape[1]
     index = faiss.IndexFlatIP(d)
-    
-    # If using GPU, convert the index to GPU
-    if device.type == "cuda":
-        gpu_resource = faiss.StandardGpuResources()
-        gpu_index = faiss.index_cpu_to_gpu(gpu_resource, 0, index)
-        gpu_index.add(final_embeddings)
-        index = faiss.index_gpu_to_cpu(gpu_index)
-    else:
-        index.add(final_embeddings)
+    index.add(final_embeddings)
 
     # Save the index and corresponding texts
     faiss.write_index(index, os.path.join(args.save_path, 'index.faiss'))
