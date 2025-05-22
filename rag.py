@@ -20,13 +20,9 @@ import torch
 import os
 
 # Globals
-embedding_model_path = os.path.join(os.path.dirname(__file__), 
-                                    'models', 
-                                    get_env_var("EMBEDDING_MODEL"))
-knowledge_save_path = os.path.join(os.path.dirname(__file__), 
-                                   'knowledge')
-faiss_index = faiss.read_index(os.path.join(knowledge_save_path, 
-                                            'index.faiss'))
+embedding_model_path = os.path.join(os.path.dirname(__file__), 'models', get_env_var("EMBEDDING_MODEL"))
+knowledge_save_path = os.path.join(os.path.dirname(__file__), 'knowledge')
+faiss_index = faiss.read_index(os.path.join(knowledge_save_path, 'index.faiss'))
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 tokenizer = AutoTokenizer.from_pretrained(embedding_model_path)
 model = AutoModel.from_pretrained(embedding_model_path)
@@ -58,29 +54,31 @@ def get_context_prompt(user_query: str) -> str:
     Returns:
         str: The formatted prompt.
     """
-    results = search_top_k(user_query, k=3)
+    results = searck_kb(user_query, top_k=3)
     context = "\n".join([f"**{result['text']}**\n" for result in results])
 
-    return PROMPT_TEMPLATE.format(context=context, 
-                                  prompt=user_query)
+    return PROMPT_TEMPLATE.format(
+        context=context, 
+        prompt=user_query
+    )
 
-def search_top_k(query_text: str, k=3) -> list[dict]:
+def get_embedding(text: str) -> np.ndarray:
     """
-    Search for the top k most relevant texts for a given query text.
+    Get the embedding for a given text.
 
     Args:
-        query_text (str): The query text to search on.
-        k (int): The number of top results to return.
+        text (str): The text to get the embedding for.
 
     Returns:
-        list[dict]: A list of dictionaries containing the text and 
-            score for each result.
+        np.ndarray: The embedding for the text.
     """
-    # Tokenize the query text
-    inputs = tokenizer(query_text, 
-                       return_tensors="pt", 
-                       padding=True, 
-                       truncation=True)
+    # Tokenize the text
+    inputs = tokenizer(
+        text, 
+        return_tensors="pt", 
+        padding=True, 
+        truncation=True
+    )
     
     # Get the inputs
     inputs = {name: tensor.to(device) for name, tensor in inputs.items()}
@@ -90,13 +88,30 @@ def search_top_k(query_text: str, k=3) -> list[dict]:
         outputs = model(**inputs)
 
     # Normalize the embeddings
-    q_embed = outputs.last_hidden_state[:, 0, :].cpu().numpy()
-    q_embed = q_embed / np.linalg.norm(q_embed, axis=1, keepdims=True)
-    scores, indices = faiss_index.search(q_embed, k)
+    embed = outputs.last_hidden_state[:, 0, :].cpu().numpy()
+    embed = embed / np.linalg.norm(embed, axis=1, keepdims=True)
+
+    return embed
+
+def searck_kb(query_text: str, top_k=3) -> list[dict]:
+    """
+    Search the knowledge base for the most relevant texts.
+
+    Args:
+        query_text (str): The query text to search on.
+        top_k (int): The number of top results to return.
+
+    Returns:
+        list[dict]: A list of dictionaries containing the text and 
+            score for each result.
+    """
+    # Get the embedding for the query text
+    q_embed = get_embedding(query_text)
+    scores, indices = faiss_index.search(q_embed, top_k)
 
     # Get the top k results
     results = []
-    for i in range(k):
+    for i in range(top_k):
         ctx_idx = indices[0][i]
         score = scores[0][i]
         results.append({
