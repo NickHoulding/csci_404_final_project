@@ -44,17 +44,17 @@ Patient presents with the following symptoms:
 Respond in a clear, medically appropriate tone. Do not speculate or provide a diagnosis.
 """
 
-def get_context_prompt(user_query: str) -> str:
+def get_context_prompt(user_query: str, results: list[dict]) -> str:
     """
     Create a formatted context prompt for the model.
 
     Args:
-        prompt (str): The user query.
+        user_query (str): The user's query.
+        results (list[dict]): The top k results from the knowledge base.
 
     Returns:
         str: The formatted prompt.
     """
-    results = searck_kb(user_query, top_k=3)
     context = "\n".join([f"**{result['text']}**\n" for result in results])
 
     return PROMPT_TEMPLATE.format(
@@ -64,7 +64,7 @@ def get_context_prompt(user_query: str) -> str:
 
 def get_embedding(text: str) -> np.ndarray:
     """
-    Get the embedding for a given text.
+    Get the embedding of a given text.
 
     Args:
         text (str): The text to get the embedding for.
@@ -93,21 +93,19 @@ def get_embedding(text: str) -> np.ndarray:
 
     return embed
 
-def searck_kb(query_text: str, top_k=3) -> list[dict]:
+def searck_kb(embedding: np.ndarray, top_k: int = 3) -> list[dict]:
     """
     Search the knowledge base for the most relevant texts.
 
     Args:
-        query_text (str): The query text to search on.
+        embedding (np.ndarray): The embedding of the query text.
         top_k (int): The number of top results to return.
 
     Returns:
         list[dict]: A list of dictionaries containing the text and 
             score for each result.
     """
-    # Get the embedding for the query text
-    q_embed = get_embedding(query_text)
-    scores, indices = faiss_index.search(q_embed, top_k)
+    scores, indices = faiss_index.search(embedding, top_k)
 
     # Get the top k results
     results = []
