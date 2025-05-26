@@ -144,6 +144,6 @@ if __name__ == '__main__':
     bert_score_avg = sum(bertscore_scores) / len(bertscore_scores)
 
     print(f"Generation Evaluation Results for {len(df)} queries:")
-    print(f"BERTScore avg:\t{bert_score_avg:.4f}")
-    print(f"ROUGE-L avg:\t{rougel_avg:.4f}")
-    print(f"BLEU avg:\t{bleu_avg:.4f}")
+    print(f"BERTScore:\t{bert_score_avg:.4f}")
+    print(f"ROUGE-L:\t{rougel_avg:.4f}")
+    print(f"BLEU:\t\t{bleu_avg:.4f}")
