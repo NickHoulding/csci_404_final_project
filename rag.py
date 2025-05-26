@@ -93,7 +93,7 @@ def get_embedding(text: str) -> np.ndarray:
 
     return embed
 
-def searck_kb(embedding: np.ndarray, top_k: int = 3) -> list[dict]:
+def search_kb(embedding: np.ndarray, top_k: int = 3) -> list[dict]:
     """
     Search the knowledge base for the most relevant texts.
 

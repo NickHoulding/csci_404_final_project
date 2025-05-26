@@ -2,7 +2,7 @@
 Handles Streamlit chat interface logic.
 """
 
-from rag import get_context_prompt, get_embedding, searck_kb
+from rag import get_context_prompt, get_embedding, search_kb
 from models import query_model
 from env import get_env_var
 from utils import load_css
@@ -43,7 +43,7 @@ def run_chat_interface():
         
         with st.spinner("Thinking..."):
             prompt_embedding = get_embedding(user_prompt)
-            results = searck_kb(prompt_embedding, top_k=3)
+            results = search_kb(prompt_embedding, top_k=3)
             context_prompt = get_context_prompt(user_prompt, results)
             title, response = query_model(context_prompt)
             output = f"### {title}\n{response}\n\n*{get_env_var('DISCLAIMER')}*"
