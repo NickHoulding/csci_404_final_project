@@ -208,6 +208,6 @@ if __name__ == '__main__':
     recall, precision, mrr = retrieval_eval_at_k(df=df, thresh=thresh, k=k)
 
     print(f"Retrieval Evaluation Results for {len(df)} queries:")
-    print(f"Recall@3:\t{recall:.4f}")
-    print(f"Precision@3:\t{precision:.4f}")
+    print(f"Recall@{k}:\t{recall:.4f}")
+    print(f"Precision@{k}:\t{precision:.4f}")
     print(f"MRR:\t\t{mrr:.4f}")
