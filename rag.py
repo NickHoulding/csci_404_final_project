@@ -26,8 +26,10 @@ faiss_index = faiss.read_index(os.path.join(knowledge_save_path, 'index.faiss'))
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 tokenizer = AutoTokenizer.from_pretrained(embedding_model_path)
 model = AutoModel.from_pretrained(embedding_model_path)
-model.to(device)
 model.eval()
+
+if torch.cuda.is_available():
+    model.to(device)
 
 with open(os.path.join(knowledge_save_path, "texts.pkl"), "rb") as f:
     texts = pickle.load(f)
