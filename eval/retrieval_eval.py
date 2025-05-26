@@ -162,7 +162,7 @@ def compute_mrr(retrieved_chunks: list[dict],
 def retrieval_eval_at_k(df: pd.DataFrame, 
                         thresh: float = 0.7,
                         k: int = 3
-                        ) -> tuple:
+                        ) -> tuple[list]:
     """
     Evaluates the retrieval performance of a RAG system using
     Recall, Precision, and Mean Reciprocal Rank (MRR) metrics.
@@ -174,27 +174,25 @@ def retrieval_eval_at_k(df: pd.DataFrame,
             consider a match.
         k (int): The number of top results to consider for evaluation.
     Returns:
-        tuple: The calculated Recall, Precision, and MRR values.
+        tuple: A tuple containing three lists:
+            - Recall@k scores
+            - Precision@k scores
+            - MRR scores
     """
-    num_queries = len(df)
-    recall = 0.0
-    precision = 0.0
-    mrr = 0.0
+    recall_scores = []
+    precision_scores = []
+    mrr_scores = []
 
     for question, long_answer in zip(df['question'], df['long_answer']):
         prompt_embedding = get_embedding(question)
         results = search_kb(prompt_embedding, top_k=k)
         gold_embedding = get_embedding(long_answer)
 
-        recall += compute_recall(results, gold_embedding, thresh)
-        precision += compute_precison(results, gold_embedding, thresh)
-        mrr += compute_mrr(results, gold_embedding, thresh)
+        recall_scores.append(compute_recall(results, gold_embedding, thresh))
+        precision_scores.append(compute_precison(results, gold_embedding, thresh))
+        mrr_scores.append(compute_mrr(results, gold_embedding, thresh))
 
-    recall /= num_queries
-    precision /= num_queries
-    mrr /= num_queries
-
-    return recall, precision, mrr
+    return recall_scores, precision_scores, mrr_scores
 
 # Entry Point
 if __name__ == '__main__':
@@ -205,9 +203,13 @@ if __name__ == '__main__':
     thresh = 0.7
     k = 3
 
-    recall, precision, mrr = retrieval_eval_at_k(df=df, thresh=thresh, k=k)
+    recall_scores, precision_scores, mrr_scores = retrieval_eval_at_k(df=df, thresh=thresh, k=k)
+
+    recall_avg = sum(recall_scores) / len(recall_scores)
+    precision_avg = sum(precision_scores) / len(precision_scores)
+    mrr_avg = sum(mrr_scores) / len(mrr_scores)
 
     print(f"Retrieval Evaluation Results for {len(df)} queries:")
-    print(f"Recall@{k}:\t{recall:.4f}")
-    print(f"Precision@{k}:\t{precision:.4f}")
-    print(f"MRR:\t\t{mrr:.4f}")
+    print(f"Recall@{k}:\t{recall_avg:.4f}")
+    print(f"Precision@{k}:\t{precision_avg:.4f}")
+    print(f"MRR:\t\t{mrr_avg:.4f}")
