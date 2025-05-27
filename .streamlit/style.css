@@ -1,14 +1,4 @@
-/* MediChat Custom Styling */
-
-/* Centered title */
-.centered-title {
-    text-align: center;
-    font-size: 3rem;
-    margin-bottom: 1rem;
-    font-weight: bold;
-    color: #4287f5;
-    text-shadow: 0px 0px 10px rgba(66, 135, 245, 0.3);
-}
+/* Custom Chat UI Styling */
 
 /* Text input styling */
 .stTextInput>div>div>input {

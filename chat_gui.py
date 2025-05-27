@@ -29,12 +29,6 @@ def add_message(role, content):
 def run_chat_interface():
     """Main function to run the Streamlit chat interface"""
     load_css()
-    
-    st.markdown(
-        "<h1 class='centered-title'>MediChat</h1>", 
-        unsafe_allow_html=True
-    )
-    
     initialize_session_state()
     display_chat_history()
     

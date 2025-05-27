@@ -8,8 +8,7 @@ import streamlit as st
 
 # Chat page configuration
 st.set_page_config(
-    page_title="MediChat",
-    page_icon="🏥",
+    page_title="Medical RAG Chatbot",
     layout="wide",
     initial_sidebar_state="none"
 )

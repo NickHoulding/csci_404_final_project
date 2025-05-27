@@ -1,5 +1,5 @@
 """
-MediChat: A medical AI chatbot.
+Medical AI chatbot.
 """
 
 # Imports
@@ -8,7 +8,7 @@ import os
 
 def main():
     """
-    Launches the Streamlit interface for MediChat
+    Launches the Streamlit chat interface.
     """
     file_path = os.path.join(
         os.path.dirname(__file__),

@@ -1,5 +1,5 @@
 """
-Models module for MediChat: Handling model loading and inference
+Handles model loading and inference.
 """
 
 # Imports

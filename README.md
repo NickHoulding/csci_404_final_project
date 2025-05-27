@@ -1,4 +1,4 @@
-# MediChat: Medical RAG Chatbot
+# Medical RAG Chatbot
 
 A chatbot that leverages Retrieval-Augmented Generation (RAG) to support doctors by providing medically relevant insights based on symptom input. The system retrieves information from a curated PubMed-based knowledge base and generates context-aware suggestions using LLaMA 3.2 and BioBERT.
 
