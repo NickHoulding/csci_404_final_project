@@ -1,14 +1,14 @@
 """
-Filters the dataset based on the given keywords using regex.
+Filters the dataset based on NER and matching keywords.
 
 Usage:      1. Install python dependencies
             2. Run: pip install https://s3-us-west-2.amazonaws.com/ai2-s2-scispacy/releases/v0.4.0/en_ner_bc5cdr_md-0.4.0.tar.gz
             3. Run: python3 filter_dataset.py --help
 
 Stops when: 1. The whole dataset is processed.
-            2. The maximum matched rows are reached.
+            2. --maxrows rows are matched.
 
-NOTE:       To 'disable' the upper limit on matched rows, set 
+NOTE:       To circumvent the upper limit on matched rows, set 
             maxrows to be >= the number of rows in the infile.
 """
 
@@ -78,6 +78,7 @@ def setup_args() -> argparse.Namespace:
     """
     parser = argparse.ArgumentParser(description="Filters .csv datasets using Named Entity Recognition (NER).")
 
+    # Define command line arguments
     parser.add_argument("--infile", type=str, required=True,
                         help="(str) path to the existing input csv")
     parser.add_argument("--outfile", type=str, required=True,
@@ -91,6 +92,7 @@ def setup_args() -> argparse.Namespace:
     parser.add_argument("--ner_model", type=str, default=get_env_var('NER_MODEL'),
                         help="(str) the name of the spaCy NER model to use (defaults to NER_MODEL in env.py if not specified)")
     
+    # Parse the command line arguments
     return parser.parse_args()
 
 def validate_args(args: argparse.Namespace) -> bool:
@@ -100,8 +102,7 @@ def validate_args(args: argparse.Namespace) -> bool:
     Args:
         args (argparse.Namespace): The parsed command line arguments.
     Returns:
-        bool: True if the arguments are valid, 
-            False otherwise.
+        bool: True if the arguments are valid, False otherwise.
     """
     if args.infile == args.outfile:
         print("Arg Error: Input and output files must be different.")
@@ -169,10 +170,11 @@ def get_nlp(ner_model: str) -> spacy.lang.en.English:
     
     return thread_local.nlp
 
-def is_respiratory_related(text: str, 
-                           keywords: list, 
-                           nlp=None
-                           ) -> bool:
+def is_respiratory_related(
+        text: str, 
+        keywords: list, 
+        nlp: spacy.lang.en.English = None
+) -> bool:
     """
     Checks if the text is related to respiratory diseases using NER.
 
@@ -186,16 +188,17 @@ def is_respiratory_related(text: str,
     """
     if not isinstance(text, str):
         return False
-
     if nlp is None:
         nlp = get_nlp()
-        
+    
+    # format text and extract entities
     text = text.lower()
     doc = nlp(text)
     entities = [ent.text.lower() 
                 for ent in doc.ents 
                 if ent.label_ in ["DISEASE", "DISEASE_OR_SYNDROME"]]
     
+    # Find matching keywords in entities
     for e in entities:
         for kw in keywords:
             if re.search(r'\b' + re.escape(kw.lower()) + r'\b', e):
@@ -203,14 +206,15 @@ def is_respiratory_related(text: str,
     
     return False
 
-def process_chunk(chunk, 
-                  processed_counter: Counter,
-                  found_counter: Counter,
-                  progress_bar: tqdm.tqdm,
-                  max_rows: int,
-                  keywords: list,
-                  ner_model: str
-                  ) -> pd.DataFrame:
+def process_chunk(
+        chunk: pd.DataFrame, 
+        processed_counter: Counter,
+        found_counter: Counter,
+        progress_bar: tqdm.tqdm,
+        max_rows: int,
+        keywords: list,
+        ner_model: str
+) -> pd.DataFrame:
     """
     Filters a chunk of the DataFrame.
 
@@ -227,12 +231,14 @@ def process_chunk(chunk,
     results = []
     nlp = get_nlp(ner_model)
 
+    # Iterate over each row in the chunk
     for _, row in chunk.iterrows():
         should_process = found_counter.get() < max_rows
         
         try:
             context = row[args.attr]
             
+            # Append to results if matching context is found
             if should_process and not pd.isna(context) and \
                 is_respiratory_related(str(context), keywords, nlp):
                 results.append(row)
@@ -246,13 +252,14 @@ def process_chunk(chunk,
     
     return pd.DataFrame(results) if results else None
 
-def parallel_filter_dataset(df: pd.DataFrame, 
-                            num_workers: int, 
-                            chunk_size: int, 
-                            max_rows: int,
-                            keywords: list,
-                            ner_model: str
-                            ) -> pd.DataFrame:
+def parallel_filter_dataset(
+        df: pd.DataFrame, 
+        num_workers: int, 
+        chunk_size: int, 
+        max_rows: int,
+        keywords: list,
+        ner_model: str
+) -> pd.DataFrame:
     """
     Filters the dataset in parallel.
     
@@ -264,19 +271,22 @@ def parallel_filter_dataset(df: pd.DataFrame,
     Returns:
         pd.DataFrame: The filtered DataFrame.
     """
+    # Split the DataFrame into chunks
     chunks = [df[i:i + chunk_size] for i in range(0, len(df), chunk_size)]
     
+    # Initialize counters, locks, and progress bar
     results_lock = threading.Lock()
     filtered_df = pd.DataFrame(columns=df.columns)
-    
     processed_counter = Counter()
     found_counter = Counter()
     progress_bar = tqdm.tqdm(total=len(df), desc="Processing")
     
+    # Process each chunk in parallel
     with concurrent.futures.ThreadPoolExecutor(max_workers=num_workers) as executor:
         futures = []
         i = 0
 
+        # Submit tasks to the thread pool executor
         while i < len(chunks) and found_counter.get() < max_rows:
             future = executor.submit(
                 process_chunk,
@@ -291,12 +301,14 @@ def parallel_filter_dataset(df: pd.DataFrame,
             futures.append(future)
             i += 1
 
+        # Wait for all futures to complete or until max_rows is reached
         for future in concurrent.futures.as_completed(futures):
             if found_counter.get() >= max_rows:
                 for f in futures:
                     if not f.done():
                         f.cancel()
         
+        # Collect results from completed futures
         all_results = []
         for future in concurrent.futures.as_completed(futures):
             try:
@@ -308,6 +320,7 @@ def parallel_filter_dataset(df: pd.DataFrame,
             except Exception as e:
                 print(f"Error collecting results: {e}")
         
+        # Combine all results into a single DataFrame
         if all_results:
             with results_lock:
                 filtered_df = pd.concat(all_results, ignore_index=True)
@@ -315,8 +328,8 @@ def parallel_filter_dataset(df: pd.DataFrame,
                 if len(filtered_df) > max_rows:
                     filtered_df = filtered_df.head(max_rows)
     
+    # Close the progress bar and return the filtered DataFrame
     progress_bar.close()
-    
     print(f"Processed {processed_counter.get()} samples")
     print(f"Found {len(filtered_df)} respiratory-related samples")
     
@@ -324,20 +337,24 @@ def parallel_filter_dataset(df: pd.DataFrame,
 
 # Entry point
 if __name__ == "__main__":
+    # Get and validate cmd line args
     args = setup_args()
 
     if not validate_args(args):
         sys.exit(1)
 
+    # Load keywords and dataset
     keywords = get_keywords(args.keywords)
     df = pd.read_csv(args.infile)
     print(f"Loaded {len(df)} samples")
     
+    # Initialize worker amoung and chunk size
     num_workers = min(os.cpu_count(), 8)
     chunk_size = max(1, len(df) // (num_workers * 4))
     num_chunks = len(df) // chunk_size + (1 if len(df) % chunk_size else 0)
     print(f"Split dataset into {num_chunks} chunks of size {chunk_size}")
 
+    # Filter the dataset into a new DataFrame
     print(f"Using {num_workers} workers for parallel processing")
     filtered_df = parallel_filter_dataset(
         df,
@@ -348,6 +365,7 @@ if __name__ == "__main__":
         args.ner_model
     )
     
+    # Save the filtered dataset
     print(f"Saving filtered dataset to {args.outfile}")
     out_dirname = os.path.dirname(args.outfile)
     out_path = out_dirname if out_dirname else os.getcwd()

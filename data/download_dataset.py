@@ -18,5 +18,6 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from env import get_env_var
 
+# Download and save the dataset
 dataset = load_dataset(get_env_var('DATASET_NAME'), get_env_var('DATASET_SUBSET'))
 dataset["train"].to_csv(get_env_var('FILE_NAME'), index=False)

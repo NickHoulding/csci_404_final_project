@@ -53,9 +53,10 @@ rouge = evaluate.load("rouge")
 bleu = evaluate.load("bleu")
 bertscore = evaluate.load("bertscore")
 
-def compute_rouge_l(prediction: str, 
-                  reference: str
-                  ) -> float:
+def compute_rouge_l(
+        prediction: str, 
+        reference: str
+) -> float:
     """
     Computes the ROUGE score for the generated text against 
     the reference text.
@@ -66,12 +67,15 @@ def compute_rouge_l(prediction: str,
     Returns:
         dict: The ROUGE score.
     """
-    return rouge.compute(predictions=[prediction], 
-                         references=[reference])['rougeL']
+    return rouge.compute(
+        predictions=[prediction], 
+        references=[reference]
+    )['rougeL']
 
-def compute_bleu(prediction: str, 
-                 reference: str
-                 ) -> float:
+def compute_bleu(
+        prediction: str, 
+        reference: str
+) -> float:
     """
     Computes the BLEU score for the generated text against 
     the reference text.
@@ -82,12 +86,15 @@ def compute_bleu(prediction: str,
     Returns:
         float: The BLEU score.
     """
-    return bleu.compute(predictions=[prediction], 
-                        references=[[reference]])['bleu']
+    return bleu.compute(
+        predictions=[prediction], 
+        references=[[reference]]
+    )['bleu']
 
-def compute_bertscore(prediction: str, 
-                      reference: str
-                      ) -> float:
+def compute_bertscore(
+        prediction: str, 
+        reference: str
+) -> float:
     """
     Computes the BERTScore for the generated text against 
     the reference text.
@@ -98,9 +105,11 @@ def compute_bertscore(prediction: str,
     Returns:
         dict: The F1 score of the BERTScore.
     """
-    return bertscore.compute(predictions=[prediction], 
-                               references=[reference], 
-                               lang='en')['f1'][0]
+    return bertscore.compute(
+        predictions=[prediction], 
+        references=[reference], 
+        lang='en'
+    )['f1'][0]
 
 def generation_eval(df: pd.DataFrame) -> tuple[list]:
     """
@@ -120,28 +129,41 @@ def generation_eval(df: pd.DataFrame) -> tuple[list]:
     bleu_scores = []
     bertscore_scores = []
 
+    # Calculate scores for each row in the eval DataFrame
     for question, long_answer in zip(df['question'], df['long_answer']):
         prompt_embedding = get_embedding(question)
         results = search_kb(prompt_embedding, top_k=3)
         context_prompt = get_context_prompt(question, results)
         _, generated = query_model(context_prompt)
 
-        bleu_scores.append(compute_bleu(generated, long_answer))
-        rougel_scores.append(compute_rouge_l(generated, long_answer))
-        bertscore_scores.append(compute_bertscore(generated, long_answer))
+        bleu_scores.append(compute_bleu(
+            generated, 
+            long_answer
+        ))
+        rougel_scores.append(compute_rouge_l(
+            generated, 
+            long_answer
+        ))
+        bertscore_scores.append(compute_bertscore(
+            generated, 
+            long_answer
+        ))
 
     return rougel_scores, bleu_scores, bertscore_scores
 
 # Entry Point
 if __name__ == '__main__':
+    # Load the evaluation data from a CSV file
     csv_path = os.path.join(os.path.dirname(__file__), 'eval.csv')
     df = pd.read_csv(csv_path)
 
-    rougel_scores, bleu_scores, bertscore_scores = generation_eval(df=df)
+    # Calculate the evaluation metrics
+    rougel, bleu, bertscore = generation_eval(df=df)
 
-    rougel_avg = sum(rougel_scores) / len(rougel_scores)
-    bleu_avg = sum(bleu_scores) / len(bleu_scores)
-    bert_score_avg = sum(bertscore_scores) / len(bertscore_scores)
+    # Calculate the average scores
+    rougel_avg = sum(rougel) / len(df)
+    bleu_avg = sum(bleu) / len(df)
+    bert_score_avg = sum(bertscore) / len(df)
 
     print(f"Generation Evaluation Results for {len(df)} queries:")
     print(f"BERTScore:\t{bert_score_avg:.4f}")
