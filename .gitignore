@@ -1,5 +1,6 @@
 # Directories
 __pycache__
+eval/__pycache__
 venv
 models/dmis-lab
 models/meta-llama
