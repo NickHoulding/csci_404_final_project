@@ -34,6 +34,7 @@ def setup_args() -> argparse.Namespace:
     Returns:
         argparse.Namespace: The parsed command line arguments.
     """
+    # Define command line arguments
     parser = argparse.ArgumentParser(description="Populates a FAISS index with embeddings from a CSV file.")
 
     parser.add_argument("--infile", type=str, required=True,
@@ -45,6 +46,7 @@ def setup_args() -> argparse.Namespace:
     parser.add_argument("--batch_size", type=int, default=64,
                         help="(int) the batch size to use for processing")
     
+    # Parse the command line arguments
     return parser.parse_args()
 
 def validate_args(args: argparse.Namespace) -> bool:
@@ -87,16 +89,20 @@ def validate_args(args: argparse.Namespace) -> bool:
     return True
 
 def main():
+    # Create and validate cmd line args
     args = setup_args()
 
     if not validate_args(args):
         print("Arg Error: Invalid arguments. Exiting...")
         sys.exit(1)
 
-    embedding_model_path = os.path.join(os.path.dirname(__file__), 
-                                        '..', 
-                                        'models', 
-                                        get_env_var("EMBEDDING_MODEL"))
+    # Set up the embedding model and device
+    embedding_model_path = os.path.join(
+        os.path.dirname(__file__), 
+        '..', 
+        'models', 
+        get_env_var("EMBEDDING_MODEL"
+    ))
     
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device} for embeddings generation")
@@ -108,44 +114,54 @@ def main():
         print(f"Allocated: {torch.cuda.memory_allocated(0) / 1024**2:.2f} MB")
         print(f"Cached: {torch.cuda.memory_reserved(0) / 1024**2:.2f} MB")
 
+    # Load the tokenizer and model
     tokenizer = AutoTokenizer.from_pretrained(embedding_model_path)
     model = AutoModel.from_pretrained(embedding_model_path)
     model = model.to(device)
+
+    # Disable training-specific features
     model.eval()
 
+    # Load and process the input CSV file
     df = pd.read_csv(args.infile)
     texts = df[args.attr].tolist()
     all_embeddings = []
-    
     total_batches = (len(texts) + args.batch_size - 1) // args.batch_size
     print(f"Processing {len(texts)} texts in {total_batches} batches")
 
+    # Process texts in batches
     for i in range(0, len(texts), args.batch_size):
         batch = texts[i:i + args.batch_size]
         batch_num = i // args.batch_size + 1
         print(f"Processing batch {batch_num}/{total_batches}...", end="\r")
 
-        inputs = tokenizer(batch,
-                           padding=True,
-                           truncation=True,
-                           max_length=512,
-                           return_tensors="pt",)
+        # Tokenize the batch
+        inputs = tokenizer(
+            batch,
+            padding=True,
+            truncation=True,
+            max_length=512,
+            return_tensors="pt"
+        )
         
+        # Move inputs to the appropriate device
         inputs = {k: v.to(device) for k, v in inputs.items()}
 
+        # Generate embeddings
         with torch.no_grad():
             outputs = model(**inputs)
             
+        # Extract the embeddings
         embeddings = outputs.last_hidden_state[:, 0, :]
-        embeddings = embeddings / torch.norm(embeddings, 
-                                             dim=1, 
-                                             keepdim=True)
+        embeddings = embeddings / torch.norm(embeddings, dim=1, keepdim=True)
         embeddings = embeddings.cpu().numpy()
         all_embeddings.append(embeddings)
         
+        # Clear memory
         del inputs, outputs
         torch.cuda.empty_cache() if device.type == "cuda" else None
 
+    # Format and save the embeddings
     print("\nFinalized all batches. Creating index...")
     final_embeddings = np.vstack(all_embeddings)
 

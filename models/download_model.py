@@ -19,10 +19,12 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from env import get_env_var
 
+# Load tokenizer and model from HuggingFace
 model_name = get_env_var('MODEL_NAME')
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModel.from_pretrained(model_name)
 
+# Save the tokenizer and model to the local cache
 tokenizer.save_pretrained(os.path.join(os.path.dirname(__file__), model_name))
 model.save_pretrained(os.path.join(os.path.dirname(__file__), model_name))
 
