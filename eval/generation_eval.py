@@ -62,7 +62,7 @@ def compute_rouge_l(
     the reference text.
 
     Args:
-        generated (str): The generated text.
+        prediction (str): The generated text.
         reference (str): The reference text.
     Returns:
         dict: The ROUGE score.
@@ -81,7 +81,7 @@ def compute_bleu(
     the reference text.
 
     Args:
-        generated (str): The generated text.
+        prediction (str): The generated text.
         reference (str): The reference text.
     Returns:
         float: The BLEU score.
@@ -100,7 +100,7 @@ def compute_bertscore(
     the reference text.
 
     Args:
-        generated (str): The generated text.
+        prediction (str): The generated text.
         reference (str): The reference text.
     Returns:
         dict: The F1 score of the BERTScore.

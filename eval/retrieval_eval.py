@@ -94,13 +94,15 @@ def compute_cosine_similarity(
     # Compute cosine similarity
     return dot_product / (norm_a * norm_b)
 
-def compute_recall(
+def compute_bin_recall(
         retrieved_chunks: list[dict], 
         gold_embedding: np.ndarray,
         thresh: float = 0.7
 ) -> int:
     """
-    Computes recall for k retrieved chunks against gold answer.
+    Computes binary recall for k retrieved chunks against 
+    gold answer. (Tests if there is at least one relevant 
+    chunk in the top-k results.)
 
     Args:
         retrieved_chunks (list): The retrieved chunks.
@@ -121,7 +123,7 @@ def compute_recall(
         
     return 0
 
-def compute_precison(
+def compute_precision(
         retrieved_chunks: list[dict], 
         gold_embedding: np.ndarray,
         thresh: float = 0.7
@@ -215,12 +217,12 @@ def retrieval_eval_at_k(
         results = search_kb(prompt_embedding, top_k=k)
         gold_embedding = get_embedding(long_answer)
 
-        recall_scores.append(compute_recall(
+        recall_scores.append(compute_bin_recall(
             results, 
             gold_embedding, 
             thresh
         ))
-        precision_scores.append(compute_precison(
+        precision_scores.append(compute_precision(
             results, 
             gold_embedding, 
             thresh
