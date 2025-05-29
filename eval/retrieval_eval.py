@@ -69,37 +69,6 @@ def get_cached_embedding(text: str) -> np.ndarray:
         embedding_cache[text] = embedding
         return embedding
 
-def compute_cosine_similarity(
-        vec_a: np.ndarray,
-        vec_b: np.ndarray
-) -> float:
-    """
-    Computes the cosine similarity between two vectors.
-
-    Args:
-        vec_a (list or np.array): First vector.
-        vec_b (list or np.array): Second vector.
-    Returns:
-        float: Cosine similarity between the two vectors.
-    """
-    # Flatten the vectors to ensure they are 1D
-    vec_a = vec_a.flatten()
-    vec_b = vec_b.flatten()
-
-    # Calculate the dot product
-    dot_product = (vec_a * vec_b).sum()
-    
-    # Normalize the vectors
-    norm_a = np.linalg.norm(vec_a)
-    norm_b = np.linalg.norm(vec_b)
-
-    # Check to avoid division by zero
-    if norm_a == 0 or norm_b == 0:
-        return 0.0
-    
-    # Compute cosine similarity
-    return dot_product / (norm_a * norm_b)
-
 def compute_bin_recall(
         retrieved_chunks: list[dict], 
         gold_embedding: np.ndarray,
@@ -119,7 +88,7 @@ def compute_bin_recall(
     # Check if any chunk exceeds the similarity threshold
     for chunk in retrieved_chunks:
         chunk_embedding = get_cached_embedding(chunk['text'])
-        similarity = compute_cosine_similarity(
+        similarity = kb.compute_cosine_similarity(
             gold_embedding, 
             chunk_embedding
         )
@@ -152,7 +121,7 @@ def compute_precision(
     # Count how many chunks exceed the similarity threshold
     for chunk in retrieved_chunks:
         chunk_embedding = get_cached_embedding(chunk['text'])
-        similarity = compute_cosine_similarity(
+        similarity = kb.compute_cosine_similarity(
             gold_embedding, 
             chunk_embedding
         )
@@ -181,7 +150,7 @@ def compute_mrr(
     # Find the rank of the first chunk that exceeds the threshold
     for rank, chunk in enumerate(retrieved_chunks, start=1):
         chunk_embedding = get_cached_embedding(chunk['text'])
-        similarity = compute_cosine_similarity(
+        similarity = kb.compute_cosine_similarity(
             gold_embedding, 
             chunk_embedding
         )
