@@ -23,7 +23,7 @@ import re
 
 # Adds the parent directory to the system path so the env import works
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from rag import knowledgeBase
+from knowledge_base import knowledgeBase
 from env import get_env_var
 
 def setup_args() -> argparse.Namespace:
