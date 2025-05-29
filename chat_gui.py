@@ -3,11 +3,14 @@ Handles Streamlit chat interface logic.
 """
 
 # Imports
-from rag import get_context_prompt, get_embedding, search_kb
-from models import query_model
+from models import query_model, get_embedding
+from rag import get_context_prompt, load_kb
 from env import get_env_var
 from utils import load_css
 import streamlit as st
+
+# Globals
+kb = load_kb('knowledge/knowledge_base.pkl')
 
 def initialize_session_state():
     # Initialize session state variables if they don't exist
@@ -43,7 +46,7 @@ def run_chat_interface():
             prompt_embedding = get_embedding(user_prompt)
             
             # Search the knowledge base for most relevant context
-            results = search_kb(prompt_embedding, top_k=3)
+            results = kb.search(q_embed=prompt_embedding, top_k=3)
 
             # Add retrieved context to the user prompt
             context_prompt = get_context_prompt(user_prompt, results)

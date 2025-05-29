@@ -45,13 +45,14 @@ import os
 
 # Adds the parent directory to the system path so these imports work
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from rag import get_context_prompt, get_embedding, search_kb
-from models import query_model
+from models import query_model, get_embedding
+from rag import get_context_prompt, load_kb
 
 # Globals
 rouge = evaluate.load("rouge")
 bleu = evaluate.load("bleu")
 bertscore = evaluate.load("bertscore")
+kb = load_kb('knowledge/knowledge_base.pkl')
 
 def compute_rouge_l(
         prediction: str, 
@@ -132,7 +133,7 @@ def generation_eval(df: pd.DataFrame) -> tuple[list]:
     # Calculate scores for each row in the eval DataFrame
     for question, long_answer in zip(df['question'], df['long_answer']):
         prompt_embedding = get_embedding(question)
-        results = search_kb(prompt_embedding, top_k=3)
+        results = kb.search(q_embed=prompt_embedding, top_k=3)
         context_prompt = get_context_prompt(question, results)
         _, generated = query_model(context_prompt)
 

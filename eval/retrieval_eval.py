@@ -41,9 +41,11 @@ import os
 
 # Adds the parent directory to the system path so the rag import works
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from rag import get_embedding, search_kb
+from rag import load_kb
+from models import get_embedding
 
-# Cache for embeddings to avoid redundant computations
+# Globals
+kb = load_kb('knowledge/knowledge_base.pkl')
 embedding_cache = {}
 
 def get_cached_embedding(text: str) -> np.ndarray:
@@ -214,7 +216,7 @@ def retrieval_eval_at_k(
     # Calculate scores for each row in the eval DataFrame
     for question, long_answer in zip(df['question'], df['long_answer']):
         prompt_embedding = get_embedding(question)
-        results = search_kb(prompt_embedding, top_k=k)
+        results = kb.search(q_embed=prompt_embedding, top_k=k)
         gold_embedding = get_embedding(long_answer)
 
         recall_scores.append(compute_bin_recall(
