@@ -1,10 +1,10 @@
 """
-Converts .csv data into embeddings and populates a FAISS index.
+Converts .csv data into embeddings and populates a knowledgeBase object.
 
 This script:    1. Grabs all rows of an attribute from a .csv file.
                 2. Create embeddings from the specified attribute.
-                3. Stores the embeddings in the FAISS index.
-                4. Saves the index and the corresponding texts.
+                3. Adds each row to a knowledgeBase object.
+                4. Saves the knowledgeBase object.
 
 Usage:          1. Install python dependencies.
                 2. Install models and set env variables.
@@ -14,10 +14,8 @@ Usage:          1. Install python dependencies.
 # Imports
 from transformers import AutoTokenizer, AutoModel
 import pandas as pd
-import numpy as np
 import argparse
 import pickle
-import faiss
 import torch
 import sys
 import os
@@ -25,6 +23,7 @@ import re
 
 # Adds the parent directory to the system path so the env import works
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from rag import knowledgeBase
 from env import get_env_var
 
 def setup_args() -> argparse.Namespace:
@@ -35,7 +34,7 @@ def setup_args() -> argparse.Namespace:
         argparse.Namespace: The parsed command line arguments.
     """
     # Define command line arguments
-    parser = argparse.ArgumentParser(description="Populates a FAISS index with embeddings from a CSV file.")
+    parser = argparse.ArgumentParser(description="Populates a knowledgeBase with data from a CSV file.")
 
     parser.add_argument("--infile", type=str, required=True,
                         help="(str) path to the input csv")
@@ -125,13 +124,18 @@ def main():
     # Load and process the input CSV file
     df = pd.read_csv(args.infile)
     texts = df[args.attr].tolist()
-    all_embeddings = []
+    
+    # Create a new knowledgeBase instance
+    kb = knowledgeBase()
+    
     total_batches = (len(texts) + args.batch_size - 1) // args.batch_size
     print(f"Processing {len(texts)} texts in {total_batches} batches")
 
     # Process texts in batches
     for i in range(0, len(texts), args.batch_size):
-        batch = texts[i:i + args.batch_size]
+        batch_indices = range(i, min(i + args.batch_size, len(texts)))
+        batch = [texts[j] for j in batch_indices]
+        batch_pubids = df.iloc[batch_indices]['pubid'].tolist()
         batch_num = i // args.batch_size + 1
         print(f"Processing batch {batch_num}/{total_batches}...", end="\r")
 
@@ -155,25 +159,21 @@ def main():
         embeddings = outputs.last_hidden_state[:, 0, :]
         embeddings = embeddings / torch.norm(embeddings, dim=1, keepdim=True)
         embeddings = embeddings.cpu().numpy()
-        all_embeddings.append(embeddings)
+        
+        # Add entries to the knowledge base using pubid as entry_id
+        for j, (text, embedding, pubid) in enumerate(zip(batch, embeddings, batch_pubids)):
+            kb.add_entry(pubid, text, embedding)
         
         # Clear memory
         del inputs, outputs
         torch.cuda.empty_cache() if device.type == "cuda" else None
 
-    # Format and save the embeddings
-    print("\nFinalized all batches. Creating index...")
-    final_embeddings = np.vstack(all_embeddings)
-
-    # Create FAISS index
-    d = final_embeddings.shape[1]
-    index = faiss.IndexFlatIP(d)
-    index.add(final_embeddings)
-
-    # Save the index and corresponding texts
-    faiss.write_index(index, os.path.join(args.save_path, 'index.faiss'))
-    with open(os.path.join(args.save_path, 'texts.pkl'), 'wb') as f:
-        pickle.dump(texts, f)
+    # Save the knowledge base object
+    print(f"\nFinalized all batches. Saving knowledgeBase with {len(kb)} entries...")
+    with open(os.path.join(args.save_path, 'knowledge_base.pkl'), 'wb') as f:
+        pickle.dump(kb, f)
+    
+    print(f"knowledgeBase saved to {os.path.join(args.save_path, 'knowledge_base.pkl')}")
 
 if __name__ == "__main__":
     main()

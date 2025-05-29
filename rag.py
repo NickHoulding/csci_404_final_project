@@ -1,30 +1,42 @@
 """
 Takes the user query and retrieves the top k most relevant texts 
-from the FAISS knowledge base.
+from the knowledge base.
 """
 
 # Imports
+import types
+import sys
+
+# Add torch.classes to sys.modules to avoid streamlit errors
+if 'torch.classes' not in sys.modules:
+    sys.modules['torch.classes'] = types.ModuleType('torch.classes')
+
+from transformers import AutoTokenizer, AutoModel
+from env import get_env_var
 import numpy as np
 import pickle
-import faiss
+import torch
 import os
 
 # Globals
-knowledge_save_path = os.path.join(
+model_path = os.path.join(
     os.path.dirname(__file__), 
-    'knowledge'
+    'models', 
+    get_env_var("EMBEDDING_MODEL")
 )
-faiss_index = faiss.read_index(
-    os.path.join(
-        knowledge_save_path, 
-        'index.faiss'
-    )
+device = torch.device(
+    "cuda" if torch.cuda.is_available() 
+    else "cpu"
 )
+tokenizer = AutoTokenizer.from_pretrained(model_path)
+model = AutoModel.from_pretrained(model_path)
 
-# Load the texts from the knowledge base
-text_path = os.path.join(knowledge_save_path, "texts.pkl")
-with open(text_path, "rb") as f:
-    texts = pickle.load(f)
+# Disable training-specific features
+model.eval()
+
+# Take advantage of GPU if available
+if torch.cuda.is_available():
+    model.to(device)
 
 # Define consistent context prompt format
 PROMPT_TEMPLATE = """
@@ -71,6 +83,17 @@ class knowledgeBase():
         Returns the number of entries in the knowledge base.
         """
         return len(self.knowledge)
+
+    def print_entries(self) -> None:
+        """
+        Prints all entries in the knowledge base.
+        """
+        for entry_id, entry_data in self.knowledge.items():
+            text_preview = entry_data['text'][:40]
+            embed_preview = entry_data['embedding'][:5]
+            cosine_similarity = entry_data['cosine_similarity']
+
+            print(f"{entry_id}\t{text_preview}...\t{embed_preview}...\t{cosine_similarity:.4f}")
 
     def add_entry(
             self,
@@ -174,12 +197,21 @@ def load_kb(file_path: str) -> knowledgeBase:
             class containing the loaded data.
     """
     try:
-        with open(file_path, "rb") as f:
+        with open(file_path, 'rb') as f:
             kb = pickle.load(f)
         return kb
 
     except FileNotFoundError:
         print(f"File {file_path} not found.")
+        return None
+    
+    except NotADirectoryError:
+        print(f"Path error: {file_path} contains an invalid directory.")
+        return None
+    
+    except Exception as e:
+        print(f"Error loading knowledge base: {e}")
+        return None
 
 def get_context_prompt(
         user_query: str, 
@@ -204,3 +236,40 @@ def get_context_prompt(
         context=context, 
         prompt=user_query
     )
+
+def get_embedding(text: str) -> np.ndarray:
+    """
+    Get the embedding of a given text.
+
+    Args:
+        text (str): The text to get the embedding for.
+    Returns:
+        np.ndarray: The embedding for the text.
+    """
+    # Tokenize the text
+    inputs = tokenizer(
+        text, 
+        return_tensors="pt", 
+        padding=True, 
+        truncation=True
+    )
+    
+    # Get the inputs
+    inputs = {
+        name: tensor.to(device) 
+        for name, tensor in inputs.items()
+    }
+
+    # Get the embeddings
+    with torch.no_grad():
+        outputs = model(**inputs)
+
+    # Normalize and return the embeddings
+    embed = outputs.last_hidden_state[:, 0, :].cpu().numpy()
+    embed = embed / np.linalg.norm(
+        embed, 
+        axis=1, 
+        keepdims=True
+    )
+
+    return embed

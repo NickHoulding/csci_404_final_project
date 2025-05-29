@@ -41,11 +41,15 @@ import os
 
 # Adds the parent directory to the system path so the rag import works
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from rag import load_kb
-from models import get_embedding
+from rag import load_kb, get_embedding
 
 # Globals
-kb = load_kb('knowledge/knowledge_base.pkl')
+kb = load_kb(os.path.join(
+    os.path.dirname(__file__), 
+    '..',
+    'knowledge', 
+    'knowledge_base.pkl'
+))
 embedding_cache = {}
 
 def get_cached_embedding(text: str) -> np.ndarray:

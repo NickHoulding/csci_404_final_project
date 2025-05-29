@@ -11,7 +11,7 @@ This system does not provide medical diagnoses. All responses include a disclaim
 
 ## Features
 
-- Retrieval of top-3 relevant medical abstracts using FAISS and BioBERT embeddings
+- Retrieval of top-3 relevant medical abstracts using BioBERT embeddings
 - Contextual response generation via LLaMA 3.2:1B-Instruct
 - Domain-specific insights for respiratory infections (e.g., pneumonia, influenza)
 - Ethical safeguards including automated disclaimers in every output
@@ -24,7 +24,6 @@ This system does not provide medical diagnoses. All responses include a disclaim
 - Python 3.10.12
 - [BioBERT](https://huggingface.co/dmis-lab/biobert-v1.1) via Hugging Face Transformers
 - [LLaMA 3.2:1B-Instruct](https://ollama.com/library/llama3.2) via Ollama API
-- FAISS database (GPU-accelerated cosine similarity search)
 - Streamlit (for basic GUI)
 - Hugging Face `evaluate` library for metric scoring
 
@@ -68,7 +67,6 @@ Filtered subset of the [PubMedQA dataset](https://huggingface.co/datasets/qiaoji
 │   ├── generation_eval.py  # Text generation quality metrics
 │   └── retrieval_eval.py   # Retrieval performance metrics
 ├── knowledge/              # Processed knowledge base
-│   ├── index.faiss         # FAISS vector index
 │   ├── populate_database.py # Script to populate vector database
 │   └── texts.pkl           # Stored text chunks
 ├── models/                 # Model storage

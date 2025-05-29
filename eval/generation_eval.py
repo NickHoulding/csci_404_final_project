@@ -45,14 +45,19 @@ import os
 
 # Adds the parent directory to the system path so these imports work
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from models import query_model, get_embedding
-from rag import get_context_prompt, load_kb
+from rag import get_context_prompt, load_kb, get_embedding
+from models import query_model
 
 # Globals
 rouge = evaluate.load("rouge")
 bleu = evaluate.load("bleu")
 bertscore = evaluate.load("bertscore")
-kb = load_kb('knowledge/knowledge_base.pkl')
+kb = load_kb(os.path.join(
+    os.path.dirname(__file__), 
+    '..',
+    'knowledge', 
+    'knowledge_base.pkl'
+))
 
 def compute_rouge_l(
         prediction: str, 
