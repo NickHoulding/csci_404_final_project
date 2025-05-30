@@ -11,7 +11,7 @@ This system does not provide medical diagnoses. All responses include a disclaim
 
 ## Features
 
-- Retrieval of top-3 relevant medical abstracts using BioBERT embeddings
+- Retrieval of top most relevant medical information using BioBERT embeddings
 - Contextual response generation via LLaMA 3.2:1B-Instruct
 - Domain-specific insights for respiratory infections (e.g., pneumonia, influenza)
 - Ethical safeguards including automated disclaimers in every output
@@ -53,31 +53,19 @@ Filtered subset of the [PubMedQA dataset](https://huggingface.co/datasets/qiaoji
 
 ```
 ├── .streamlit/             # Streamlit theme configuration and styling
-│   ├── config.toml         # Streamlit configuration
-│   └── style.css           # Custom CSS styling
-├── data/                   # Dataset management
-│   ├── download_dataset.py # Script to download PubMedQA dataset
-│   ├── filter_dataset.py   # Filter dataset for respiratory cases
-│   ├── keywords.txt        # Keywords for filtering relevant articles
-│   └── Respiratory_Small_PubMedQA.csv # Filtered dataset
-├── docs/                   # Documentation files
-│   └── CSCI 404 Final Project Proposal.pdf # Project proposal document
-├── eval/                   # Evaluation modules
-│   ├── eval.csv            # Test dataset for model evaluation
-│   ├── generation_eval.py  # Text generation quality metrics
-│   └── retrieval_eval.py   # Retrieval performance metrics
-├── knowledge/              # Processed knowledge base
-│   ├── populate_database.py # Script to populate vector database
-│   └── texts.pkl           # Stored text chunks
+├── data/                   # Datasets and dataset management scripts
+├── docs/                   # Documentation files and images
+├── eval/                   # Evaluation data and scripts
+├── knowledge/              # Knowledge bases and population script
 ├── models/                 # Model storage
-│   ├── download_model.py   # Script to download models
 │   └── dmis-lab/biobert-v1.1/ # BioBERT embedding model
 ├── .env                    # Environment variables and configuration
 ├── .gitignore              # Git ignore rules
 ├── main.py                 # Application entry point
 ├── env.py                  # Environment variable handling
 ├── models.py               # Model interface for LLaMA
-├── rag.py                  # RAG implementation
+├── rag.py                  # RAG pipeline management
+├── knowledge_base.py       # Knowledge base class definition 
 ├── requirements.txt        # Python dependencies
 ├── streamlit_app.py        # Streamlit app configuration
 ├── chat_gui.py             # Streamlit chat interface logic
