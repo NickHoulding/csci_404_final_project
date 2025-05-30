@@ -217,7 +217,7 @@ if __name__ == '__main__':
     csv_path = os.path.join(os.path.dirname(__file__), 'eval.csv')
     df = pd.read_csv(csv_path)
 
-    thresh = 0.76    # Cosine similarity threshold for relevance
+    thresh = 0.75    # Cosine similarity threshold for relevance
     top_k = 3       # Top-k chunks to retrieve for evaluation
 
     # Calculate retrieval evaluation metrics

@@ -170,7 +170,7 @@ def main():
 
     # Save the knowledge base object
     print(f"\nFinalized all batches. Saving knowledgeBase with {len(kb)} entries...")
-    with open(os.path.join(args.save_path, 'knowledge_base.pkl'), 'wb') as f:
+    with open(os.path.join(args.save_path, 'knowledge_base_small.pkl'), 'wb') as f:
         pickle.dump(kb, f)
     
     print(f"knowledgeBase saved to {os.path.join(args.save_path, 'knowledge_base.pkl')}")
