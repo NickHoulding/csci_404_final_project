@@ -14,7 +14,7 @@ import os
 kb = load_kb(os.path.join(
     os.path.dirname(__file__), 
     'knowledge', 
-    'knowledge_base.pkl'
+    get_env_var('KNOWLEDGE_BASE')
 ))
 
 def initialize_session_state():

@@ -7,4 +7,4 @@ models/meta-llama
 
 # Files
 data/PubMedQA.csv
-data/Respiratory_Large_PubMedQA.csv
+test.py

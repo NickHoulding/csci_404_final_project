@@ -47,6 +47,7 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from rag import get_context_prompt, load_kb, get_embedding
 from models import query_model
+from env import get_env_var
 
 # Globals
 rouge = evaluate.load("rouge")
@@ -56,7 +57,7 @@ kb = load_kb(os.path.join(
     os.path.dirname(__file__), 
     '..',
     'knowledge', 
-    'knowledge_base.pkl'
+    get_env_var('KNOWLEDGE_BASE')
 ))
 
 def compute_rouge_l(

@@ -115,16 +115,10 @@ ollama pull llama3.2:1b-instruct-q4_0
 # Download the BioBERT embedding model
 python models/download_model.py
 
-# Download the NER model
-pip install https://s3-us-west-2.amazonaws.com/ai2-s2-scispacy/releases/v0.4.0/en_ner_bc5cdr_md-0.4.0.tar.gz
-
-# Download and filter the PubMedQA dataset
-python data/download_dataset.py
-python data/filter_dataset.py
-
-# Build the knowledge base
-python knowledge/populate_database.py
 ```
+
+At this point, you should have all necessary dependencies 
+and models to run using the existing knowledge base.
 
 ---
 

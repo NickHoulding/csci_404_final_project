@@ -42,13 +42,14 @@ import os
 # Adds the parent directory to the system path so the rag import works
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from rag import load_kb, get_embedding
+from env import get_env_var
 
 # Globals
 kb = load_kb(os.path.join(
     os.path.dirname(__file__), 
     '..',
     'knowledge', 
-    'knowledge_base.pkl'
+    get_env_var('KNOWLEDGE_BASE')
 ))
 embedding_cache = {}
 
@@ -216,7 +217,7 @@ if __name__ == '__main__':
     csv_path = os.path.join(os.path.dirname(__file__), 'eval.csv')
     df = pd.read_csv(csv_path)
 
-    thresh = 0.8    # Cosine similarity threshold for relevance
+    thresh = 0.76    # Cosine similarity threshold for relevance
     top_k = 3       # Top-k chunks to retrieve for evaluation
 
     # Calculate retrieval evaluation metrics
