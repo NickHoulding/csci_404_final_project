@@ -53,6 +53,9 @@ def run_chat_interface():
             # Search the knowledge base for most relevant context
             results = kb.search(q_embed=prompt_embedding, top_k=3)
 
+            # Log which documents were retrieved
+            print([result['pubid'] for result in results])
+
             # Add retrieved context to the user prompt
             context_prompt = get_context_prompt(user_prompt, results)
             

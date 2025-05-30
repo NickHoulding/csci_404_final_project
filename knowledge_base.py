@@ -56,6 +56,7 @@ class knowledgeBase():
         """
         # Text will be the context for the question-answer pair
         self.knowledge[entry_id] = {
+            'pubid': entry_id,
             'text': text,
             'embedding': embedding,
             'cosine_similarity': 0.0
