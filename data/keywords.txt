@@ -1,22 +1,66 @@
+ARDS
+airways
+antibiotic therapy
 asthma
+atelectasis
+alveoli
+blood gas
+bronchi
+bronchiectasis
+bronchodilator
 bronchitis
-pneumonia
-tuberculosis
-flu
-influenza
+bronchoscopy
+chest tightness
+chest x-ray
+COPD
+coronavirus
+corticosteroid
+cough
 covid
 covid-19
-coronavirus
-respiratory infection
-lung disease
-shortness of breath
+cyanosis
+diaphragm
 dyspnea
-wheezing
-cough
-chest tightness
-pulmonary
-pleurisy
-ARDS
-COPD
-upper respiratory
+emphysema
+flu
+hemoptysis
+hypoxemia
+inhaler
+intubation
+interstitial lung disease
 lower respiratory
+lung biopsy
+lung disease
+nasal congestion
+nasopharynx
+nebulizer
+oropharynx
+oxygen saturation
+oxygen therapy
+pleurisy
+pneumonia
+pneumothorax
+pulmonary
+pulmonary function test
+pulmonary rehabilitation
+respiratory failure
+respiratory infection
+rales
+rhinitis
+rhonchi
+sarcoidosis
+shortness of breath
+sinuses
+sinusitis
+sleep apnea
+snoring
+spirometry
+sputum
+stridor
+tachypnea
+thorax
+trachea
+tuberculosis
+upper respiratory
+ventilator
+wheezing
