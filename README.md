@@ -4,6 +4,12 @@ A chatbot that leverages Retrieval-Augmented Generation (RAG) to support doctors
 
 ---
 
+# Comprehensive Walkthrough
+
+For a comprehensive walkthrough of the Retrieval-Augmented Generation (RAG) pipeline, including full retrieval and generation evaluation and analysis, see `rag_chatbot_walkthrough.ipynb`.
+
+---
+
 ## Disclaimer
 This system does not provide medical diagnoses. All responses include a disclaimer and are intended only to assist licensed healthcare professionals.
 
