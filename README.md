@@ -6,7 +6,7 @@ A chatbot that leverages Retrieval-Augmented Generation (RAG) to support doctors
 
 # Comprehensive Walkthrough
 
-For a comprehensive walkthrough of the Retrieval-Augmented Generation (RAG) pipeline, including full retrieval and generation evaluation and analysis, see `rag_chatbot_walkthrough.ipynb`.
+For a comprehensive walkthrough of the Retrieval-Augmented Generation (RAG) pipeline, including full retrieval and generation evaluation and analysis, see `/colab`, upload the notebook into Google Colab, and follow the setup directions.
 
 ---
 
@@ -59,6 +59,7 @@ Filtered subset of the [PubMedQA dataset](https://huggingface.co/datasets/qiaoji
 
 ```
 ├── .streamlit/             # Streamlit theme configuration and styling
+├── colab/                  # Google Colab notebook + files for RAG pipeline walkthrough 
 ├── data/                   # Datasets and dataset management scripts
 ├── docs/                   # Documentation files and images
 ├── eval/                   # Evaluation data and scripts
